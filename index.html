@@ -11,14 +11,67 @@
 <meta name="apple-mobile-web-app-title" content="My Routine">
 <meta name="theme-color" content="#0e0e0e">
 
-<!-- Inline SVG icon as data URI for both favicon and apple-touch-icon -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'%3E%3Crect width='280' height='340' rx='48' fill='%230e0e0e'/%3E%3Crect x='96' y='36' width='6' height='140' rx='3' fill='rgba(255,255,255,0.08)'/%3E%3Crect x='178' y='36' width='6' height='140' rx='3' fill='rgba(255,255,255,0.08)'/%3E%3Crect x='91' y='80' width='16' height='5' rx='2' fill='rgba(255,255,255,0.18)'/%3E%3Crect x='173' y='80' width='16' height='5' rx='2' fill='rgba(255,255,255,0.18)'/%3E%3Crect x='30' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='44' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='55' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='62' y='84' width='156' height='9' rx='4.5' fill='%232a2a2a' stroke='rgba(255,255,255,0.2)' stroke-width='1'/%3E%3Crect x='218' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='225' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='236' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='52' y='196' width='176' height='13' rx='5' fill='%231e1e1e' stroke='rgba(255,255,255,0.1)' stroke-width='1'/%3E%3Ccircle cx='82' cy='186' r='13' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='95' y1='186' x2='178' y2='186' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='112' y1='186' x2='108' y2='88' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='152' y1='186' x2='156' y2='88' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='178' y1='186' x2='198' y2='212' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='198' y1='212' x2='192' y2='232' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='178' y1='186' x2='206' y2='208' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='206' y1='208' x2='204' y2='232' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='24' y1='252' x2='256' y2='252' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3Ctext x='140' y='282' font-family='Arial Black,sans-serif' font-size='22' font-weight='900' fill='white' text-anchor='middle' letter-spacing='3'%3EMY%3C/text%3E%3Ctext x='140' y='312' font-family='Arial Black,sans-serif' font-size='15' font-weight='700' fill='%23E8FF47' text-anchor='middle' letter-spacing='5'%3EROUTINE%3C/text%3E%3C/svg%3E">
+<!-- Favicon (SVG works fine for browser tab) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'%3E%3Crect width='280' height='340' rx='48' fill='%230e0e0e'/%3E%3Crect x='30' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='44' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='55' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='62' y='84' width='156' height='9' rx='4.5' fill='%232a2a2a'/%3E%3Crect x='218' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='225' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='236' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='52' y='196' width='176' height='13' rx='5' fill='%231e1e1e'/%3E%3Ccircle cx='82' cy='186' r='13' fill='none' stroke='white' stroke-width='3.5'/%3E%3Cline x1='95' y1='186' x2='178' y2='186' stroke='white' stroke-width='4'/%3E%3Cline x1='112' y1='186' x2='108' y2='88' stroke='white' stroke-width='3.5'/%3E%3Cline x1='152' y1='186' x2='156' y2='88' stroke='white' stroke-width='3.5'/%3E%3Cline x1='178' y1='186' x2='198' y2='212' stroke='white' stroke-width='3.5'/%3E%3Cline x1='198' y1='212' x2='192' y2='232' stroke='white' stroke-width='3.5'/%3E%3Cline x1='178' y1='186' x2='206' y2='208' stroke='white' stroke-width='3.5'/%3E%3Cline x1='206' y1='208' x2='204' y2='232' stroke='white' stroke-width='3.5'/%3E%3Ctext x='140' y='282' font-family='Arial Black,sans-serif' font-size='22' font-weight='900' fill='white' text-anchor='middle'%3EMY%3C/text%3E%3Ctext x='140' y='312' font-family='Arial Black,sans-serif' font-size='15' font-weight='700' fill='%23E8FF47' text-anchor='middle'%3EROUTINE%3C/text%3E%3C/svg%3E">
 
-<!-- Apple touch icon (PNG fallback via canvas — generated inline) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 340'%3E%3Crect width='280' height='340' rx='48' fill='%230e0e0e'/%3E%3Crect x='96' y='36' width='6' height='140' rx='3' fill='rgba(255,255,255,0.08)'/%3E%3Crect x='178' y='36' width='6' height='140' rx='3' fill='rgba(255,255,255,0.08)'/%3E%3Crect x='91' y='80' width='16' height='5' rx='2' fill='rgba(255,255,255,0.18)'/%3E%3Crect x='173' y='80' width='16' height='5' rx='2' fill='rgba(255,255,255,0.18)'/%3E%3Crect x='30' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='44' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='55' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='62' y='84' width='156' height='9' rx='4.5' fill='%232a2a2a' stroke='rgba(255,255,255,0.2)' stroke-width='1'/%3E%3Crect x='218' y='76' width='7' height='28' rx='3' fill='%23E8FF47'/%3E%3Crect x='225' y='72' width='11' height='36' rx='4' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='1.5'/%3E%3Crect x='236' y='66' width='14' height='48' rx='5' fill='%231a1a1a' stroke='%23E8FF47' stroke-width='2'/%3E%3Crect x='52' y='196' width='176' height='13' rx='5' fill='%231e1e1e' stroke='rgba(255,255,255,0.1)' stroke-width='1'/%3E%3Ccircle cx='82' cy='186' r='13' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='95' y1='186' x2='178' y2='186' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='112' y1='186' x2='108' y2='88' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='152' y1='186' x2='156' y2='88' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='178' y1='186' x2='198' y2='212' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='198' y1='212' x2='192' y2='232' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='178' y1='186' x2='206' y2='208' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='206' y1='208' x2='204' y2='232' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='24' y1='252' x2='256' y2='252' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3Ctext x='140' y='282' font-family='Arial Black,sans-serif' font-size='22' font-weight='900' fill='white' text-anchor='middle' letter-spacing='3'%3EMY%3C/text%3E%3Ctext x='140' y='312' font-family='Arial Black,sans-serif' font-size='15' font-weight='700' fill='%23E8FF47' text-anchor='middle' letter-spacing='5'%3EROUTINE%3C/text%3E%3C/svg%3E">
+<!-- Apple touch icon — generated as PNG via canvas on load -->
+<link rel="apple-touch-icon" id="apple-touch-icon-link" href="">
 
-<!-- Web App Manifest (inline) -->
+<!-- Web App Manifest -->
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22My%20Routine%22%2C%22short_name%22%3A%22My%20Routine%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230e0e0e%22%2C%22theme_color%22%3A%22%230e0e0e%22%2C%22orientation%22%3A%22portrait%22%7D">
+
+<script>
+// Generate PNG apple-touch-icon from SVG via canvas
+(function() {
+  const SVG_SRC = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 340">
+    <rect width="280" height="340" rx="48" fill="#0e0e0e"/>
+    <rect x="96" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <rect x="178" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <rect x="91" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
+    <rect x="173" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
+    <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="44" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="55" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="62" y="84" width="156" height="9" rx="4.5" fill="#2a2a2a" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <rect x="218" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="225" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="236" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="52" y="196" width="176" height="13" rx="5" fill="#1e1e1e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="55" y="209" width="6" height="20" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <rect x="219" y="209" width="6" height="20" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <circle cx="82" cy="186" r="13" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="95" y1="186" x2="178" y2="186" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <line x1="112" y1="186" x2="108" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="152" y1="186" x2="156" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="178" y1="186" x2="198" y2="212" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="198" y1="212" x2="192" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="178" y1="186" x2="206" y2="208" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="206" y1="208" x2="204" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="24" y1="252" x2="256" y2="252" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="140" y="282" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="3">MY</text>
+    <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
+  </svg>`;
+
+  const SIZE = 512;
+  const blob = new Blob([SVG_SRC], {type: 'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.width = SIZE; canvas.height = SIZE;
+    const ctx = canvas.getContext('2d');
+    // Fill background first (iOS clips to rounded rect but needs bg)
+    ctx.fillStyle = '#0e0e0e';
+    ctx.fillRect(0, 0, SIZE, SIZE);
+    ctx.drawImage(img, 0, 0, SIZE, SIZE);
+    const png = canvas.toDataURL('image/png');
+    const link = document.getElementById('apple-touch-icon-link');
+    if (link) link.href = png;
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+})();
+</script>
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
@@ -106,6 +159,58 @@
   .ex-guide-hint { font-size: 10px; color: var(--c5); opacity: 0; transition: opacity 0.15s; margin-left: 8px; white-space: nowrap; }
   .day-tip { margin-top: 12px; padding: 9px 12px; background: rgba(255,255,255,0.03); border-left: 2px solid; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--muted); line-height: 1.6; font-style: italic; }
   .rest-note { margin-top: 12px; font-size: 11px; color: var(--muted2); }
+
+  /* ── LOG INNER TABS ── */
+  .log-tabs { max-width: 760px; margin: 0 auto 1rem; display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .log-tab { font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; padding: 8px 16px; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; text-transform: uppercase; }
+  .log-tab.active { color: #FF9F47; border-bottom-color: #FF9F47; }
+  .log-tab-panel { display: none; }
+  .log-tab-panel.active { display: block; animation: fadeIn 0.18s ease; }
+
+  /* ── WEEKLY OVERVIEW ── */
+  .wo-week { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+  .wo-week-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .wo-week-label { font-family: 'Bebas Neue',sans-serif; font-size: 20px; color: var(--text); letter-spacing: 0.05em; }
+  .wo-week-stat { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .wo-week-stat span { color: #FF9F47; font-weight: 600; }
+  .wo-days-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); }
+  .wo-day-cell { background: var(--surface); padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; }
+  .wo-day-name { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); }
+  .wo-day-dot { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .wo-day-dot.done { background: rgba(71,255,170,0.15); }
+  .wo-day-dot.missed { background: rgba(255,107,71,0.12); }
+  .wo-day-dot.empty { background: var(--surface2); }
+  .wo-day-dot.future { background: transparent; border: 1px dashed var(--border2); }
+  .wo-day-note { font-size: 10px; color: var(--muted); line-height: 1.3; word-break: break-word; }
+  .wo-empty { text-align: center; padding: 2.5rem 1rem; }
+  .wo-empty-title { font-family: 'Bebas Neue',sans-serif; font-size: 20px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 6px; }
+  .wo-empty-sub { font-size: 13px; color: var(--muted); }
+  .missed-section { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .missed-btn {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    padding: 9px; border-radius: 8px; border: 1px solid rgba(255,107,71,0.25);
+    background: transparent; color: rgba(255,107,71,0.6); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  .missed-btn:hover { background: rgba(255,107,71,0.08); color: #FF6B47; border-color: rgba(255,107,71,0.5); }
+  .missed-form { display: none; margin-top: 10px; flex-direction: column; gap: 8px; }
+  .missed-form.open { display: flex; }
+  .missed-input {
+    background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 10px 12px; outline: none; resize: none; min-height: 60px;
+  }
+  .missed-input:focus { border-color: rgba(255,107,71,0.5); }
+  .missed-input::placeholder { color: var(--muted2); }
+  .missed-save-row { display: flex; gap: 8px; }
+  .missed-save { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,107,71,0.35); background: rgba(255,107,71,0.1); color: #FF6B47; cursor: pointer; transition: all 0.15s; }
+  .missed-save:hover { background: rgba(255,107,71,0.2); }
+  .missed-cancel { font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; }
+  .missed-logged { margin-top: 8px; padding: 10px 12px; background: rgba(255,107,71,0.07); border: 1px solid rgba(255,107,71,0.2); border-radius: 8px; display: none; }
+  .missed-logged.show { display: block; }
+  .missed-logged-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,107,71,0.7); margin-bottom: 4px; }
+  .missed-logged-reason { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .missed-logged-clear { font-size: 10px; color: var(--muted2); background: none; border: none; cursor: pointer; padding: 0; margin-top: 6px; text-decoration: underline; font-family: 'DM Sans', sans-serif; }
   .rest-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 14px; display: flex; align-items: center; gap: 16px; }
   .rest-icon { font-size: 24px; opacity: 0.3; }
   .rest-text { font-size: 13px; color: var(--muted); }
@@ -166,6 +271,77 @@
 
   footer { max-width: 760px; margin: 2.5rem auto 0; font-size: 11px; color: rgba(255,255,255,0.15); text-align: center; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 1rem; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── STREAK CARD ── */
+  .streak-card {
+    max-width: 760px; margin: 0 auto 1rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+    transition: border-color 0.3s;
+  }
+  .streak-flame { font-size: 22px; line-height: 1; }
+  .streak-info { display: flex; align-items: baseline; gap: 6px; }
+  .streak-num { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--c1); line-height: 1; }
+  .streak-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .streak-detail { font-size: 12px; color: var(--muted); margin-left: auto; text-align: right; }
+
+  /* ── MUSCLE HEATMAP ── */
+  .heatmap-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; text-align: center;
+  }
+  .heatmap-title {
+    font-size: 12px; color: var(--muted); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 14px; min-height: 18px;
+    transition: all 0.3s;
+  }
+  .heatmap-wrap {
+    display: flex; gap: 20px; justify-content: center; align-items: flex-start;
+  }
+  .body-svg { width: 110px; flex-shrink: 0; }
+
+  /* ── STREAK CARD ── */
+  .streak-card {
+    max-width: 760px; margin: 0 auto 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .streak-flame { font-size: 22px; line-height: 1; }
+  .streak-info { display: flex; align-items: baseline; gap: 6px; }
+  .streak-num { font-family: 'Bebas Neue', sans-serif; font-size: 32px; line-height: 1; color: var(--c1); }
+  .streak-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .streak-detail { font-size: 11px; color: var(--muted2); margin-left: auto; text-align: right; line-height: 1.4; }
+
+  /* ── HEATMAP ── */
+  .heatmap-always { max-width: 760px; margin: 0 auto 12px; }
+  .heatmap-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; }
+  .heatmap-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; text-align: center; }
+  .heatmap-wrap { display: flex; justify-content: center; gap: 32px; }
+  .body-svg { width: 100px; height: auto; }
+  .muscle-active { fill: var(--c1) !important; filter: drop-shadow(0 0 4px rgba(232,255,71,0.4)); transition: fill 0.25s; }
+  .muscle-secondary { fill: rgba(232,255,71,0.28) !important; transition: fill 0.25s; }
+  .heatmap-legend { display: flex; justify-content: center; gap: 16px; margin-top: 12px; }
+  .heatmap-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted2); letter-spacing: 0.06em; text-transform: uppercase; }
+  .heatmap-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .heatmap-title { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; text-align: center; }
+  .heatmap-wrap { display: flex; justify-content: center; gap: 24px; }
+  .body-svg { width: 110px; height: auto; }
+  .muscle-active { fill: var(--c1) !important; opacity: 1 !important; transition: fill 0.3s; }
+  .muscle-secondary { fill: rgba(232,255,71,0.35) !important; opacity: 1 !important; transition: fill 0.3s; }
+
+  /* ── SET CHECKBOXES ── */
+  .wl-set-check {
+    width: 28px; height: 28px; border-radius: 7px;
+    border: 1.5px solid var(--border2); background: transparent;
+    color: var(--muted2); font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .wl-set-check:hover { border-color: var(--c5); color: var(--c5); }
+  .wl-set-check.set-check-active { background: rgba(71,255,170,0.15); border-color: var(--c5); color: var(--c5); }
+  .wl-set-row.set-done .wl-set-input { opacity: 0.4; }
+  .wl-set-row.set-done .wl-set-num { color: var(--c5); }
 
 
   /* ── BOTTOM NAV ── */
@@ -240,17 +416,20 @@
   .wl-ex-del { font-size: 11px; color: var(--muted2); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.1s; white-space: nowrap; }
   .wl-ex-del:hover { color: #FF6B47; background: rgba(255,107,71,0.1); }
 
-  /* set rows header */
-  .wl-sets-header { display: grid; grid-template-columns: 28px 1fr 1fr 24px; gap: 6px; align-items: center; margin-bottom: 4px; padding: 0 2px; }
+  .wl-sets-header { display: grid; grid-template-columns: 28px 1fr 1fr 28px 24px; gap: 6px; align-items: center; margin-bottom: 4px; padding: 0 2px; }
   .wl-sets-col-label { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); text-align: center; }
 
   /* individual set row */
   .wl-sets-list { display: flex; flex-direction: column; gap: 5px; }
-  .wl-set-row { display: grid; grid-template-columns: 28px 1fr 1fr 24px; gap: 6px; align-items: center; }
+  .wl-set-row { display: grid; grid-template-columns: 28px 1fr 1fr 28px 24px; gap: 6px; align-items: center; transition: opacity 0.2s; }
+  .wl-set-row.set-done { opacity: 0.4; }
+  .wl-set-row.set-done .wl-set-input { text-decoration: line-through; }
   .wl-set-num { font-size: 11px; font-weight: 600; color: var(--muted2); text-align: center; font-variant-numeric: tabular-nums; }
   .wl-set-input { background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: 'DM Sans',sans-serif; font-size: 14px; font-weight: 500; padding: 8px 6px; outline: none; text-align: center; width: 100%; min-width: 0; -moz-appearance: textfield; }
   .wl-set-input::-webkit-inner-spin-button, .wl-set-input::-webkit-outer-spin-button { -webkit-appearance: none; }
   .wl-set-input:focus { border-color: #FF9F47; }
+  .wl-set-check { width: 28px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--muted2); font-size: 14px; cursor: pointer; transition: all 0.15s; }
+  .wl-set-check.set-check-active { background: rgba(71,255,170,0.15); border-color: rgba(71,255,170,0.4); color: var(--c5); }
   .wl-set-del { font-size: 13px; color: var(--muted2); background: none; border: none; cursor: pointer; padding: 0; text-align: center; transition: color 0.1s; line-height: 1; }
   .wl-set-del:hover { color: #FF6B47; }
 
@@ -427,14 +606,24 @@
 ═══════════════════════════════ -->
 <div class="page active" id="page-routine">
 <div class="page-header">
-  <p class="eyebrow">5-Day Split · No Mondays</p>
+  <p class="eyebrow">5-Day Split · No Tuesdays</p>
   <h1>My <em>Weekly</em><br>Routine.</h1>
   <p class="subtitle">Tap any training day to view your session. Tap an exercise for form tips.</p>
 </div>
 
+<!-- STREAK CARD -->
+<div class="streak-card" id="streak-card">
+  <div class="streak-flame">🔥</div>
+  <div class="streak-info">
+    <div class="streak-num" id="streak-num">0</div>
+    <div class="streak-label">week streak</div>
+  </div>
+  <div class="streak-detail" id="streak-detail">Log sessions to start your streak</div>
+</div>
+
 <div class="week-strip">
-  <div class="week-day rest-day" id="wd-mon"><span class="wd-name">Mon</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
-  <div class="week-day" id="wd-tue" onclick="showDay('tue')"><span class="wd-name">Tue</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest<br>Tris</span></div>
+  <div class="week-day" id="wd-mon" onclick="showDay('mon')"><span class="wd-name">Mon</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest<br>Tris</span></div>
+  <div class="week-day rest-day" id="wd-tue"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Hockey</span></div>
   <div class="week-day" id="wd-wed" onclick="showDay('wed')"><span class="wd-name">Wed</span><span class="wd-dot" style="background:var(--c2);"></span><span class="wd-label">Back<br>Bis</span></div>
   <div class="week-day" id="wd-thu" onclick="showDay('thu')"><span class="wd-name">Thu</span><span class="wd-dot" style="background:var(--c3);"></span><span class="wd-label">Legs<br>Abs</span></div>
   <div class="week-day rest-day" id="wd-fri"><span class="wd-name">Fri</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
@@ -443,20 +632,106 @@
 </div>
 
 <div class="content">
-  <div class="day-panel active" id="panel-default">
-    <div class="rest-card" style="justify-content:center;flex-direction:column;text-align:center;padding:2.5rem;gap:10px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted2);letter-spacing:0.1em;">SELECT A DAY</div>
-      <div class="rest-text">Tap any training day above to view your exercises.</div>
+  <div class="heatmap-always">
+<div class="heatmap-card" id="heatmap-card">
+    <div class="heatmap-title" id="heatmap-title">Tap a day to see muscles worked</div>
+    <div class="heatmap-wrap">
+    <!-- FRONT body -->
+    <svg class="body-svg" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- head -->
+      <ellipse cx="60" cy="18" rx="13" ry="15" fill="#2a2a2a" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <!-- neck -->
+      <rect x="55" y="31" width="10" height="8" rx="2" fill="#2e3138"/>
+      <!-- chest -->
+      <path d="M35 42 Q60 38 85 42 L88 72 Q60 76 32 72 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-chest"/>
+      <!-- front delts / shoulders — sit beside chest, not over arms -->
+      <ellipse cx="28" cy="48" rx="9" ry="11" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-shoulder-l"/>
+      <ellipse cx="92" cy="48" rx="9" ry="11" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-shoulder-r"/>
+      <!-- biceps — sit below shoulders, no overlap -->
+      <rect x="19" y="62" width="11" height="28" rx="5" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-bicep-l"/>
+      <rect x="90" y="62" width="11" height="28" rx="5" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-bicep-r"/>
+      <!-- forearms -->
+      <rect x="16" y="90" width="9" height="24" rx="4" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-forearm-l"/>
+      <rect x="95" y="90" width="9" height="24" rx="4" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-forearm-r"/>
+      <!-- abs -->
+      <path d="M38 72 Q60 76 82 72 L80 110 Q60 114 40 110 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-abs"/>
+      <!-- obliques -->
+      <path d="M32 76 L38 72 L40 110 L30 106 Z" fill="#2e3138" id="f-oblique-l"/>
+      <path d="M88 76 L82 72 L80 110 L90 106 Z" fill="#2e3138" id="f-oblique-r"/>
+      <!-- hip / pelvis -->
+      <path d="M30 110 Q60 116 90 110 L88 128 Q60 132 32 128 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+      <!-- quads -->
+      <path d="M32 128 Q44 126 48 130 L46 180 Q38 184 30 178 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-quad-l"/>
+      <path d="M88 128 Q76 126 72 130 L74 180 Q82 184 90 178 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-quad-r"/>
+      <!-- knees -->
+      <ellipse cx="40" cy="185" rx="10" ry="8" fill="#252830"/>
+      <ellipse cx="80" cy="185" rx="10" ry="8" fill="#252830"/>
+      <!-- shins -->
+      <path d="M31 192 Q40 190 49 192 L47 240 Q40 244 33 240 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+      <path x="1" d="M71 192 Q80 190 89 192 L87 240 Q80 244 73 240 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+      <!-- feet -->
+      <ellipse cx="40" cy="248" rx="12" ry="6" fill="#252830"/>
+      <ellipse cx="80" cy="248" rx="12" ry="6" fill="#252830"/>
+      <!-- triceps only visible on back view, not front -->
+      <!-- FRONT label -->
+      <text x="60" y="258" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="2">FRONT</text>
+    </svg>
+
+    <!-- BACK body -->
+    <svg class="body-svg" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- head -->
+      <ellipse cx="60" cy="18" rx="13" ry="15" fill="#2a2a2a" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <!-- neck -->
+      <rect x="55" y="31" width="10" height="8" rx="2" fill="#2e3138"/>
+      <!-- traps -->
+      <path d="M35 36 Q60 32 85 36 L88 52 Q60 48 32 52 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-trap"/>
+      <!-- rear delts -->
+      <ellipse cx="28" cy="50" rx="11" ry="12" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rear-delt-l"/>
+      <ellipse cx="92" cy="50" rx="11" ry="12" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rear-delt-r"/>
+      <!-- lats -->
+      <path d="M30 52 L36 48 L38 86 Q28 90 24 80 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lat-l"/>
+      <path d="M90 52 L84 48 L82 86 Q92 90 96 80 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lat-r"/>
+      <!-- mid back / rhomboids -->
+      <path d="M36 48 Q60 44 84 48 L82 86 Q60 90 38 86 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rhomboid"/>
+      <!-- triceps -->
+      <rect x="16" y="60" width="12" height="32" rx="6" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-tricep-l"/>
+      <rect x="92" y="60" width="12" height="32" rx="6" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-tricep-r"/>
+      <!-- forearms back -->
+      <rect x="14" y="92" width="10" height="24" rx="5" fill="#2e3138" id="b-forearm-l"/>
+      <rect x="96" y="92" width="10" height="24" rx="5" fill="#2e3138" id="b-forearm-r"/>
+      <!-- lower back -->
+      <path d="M38 86 Q60 90 82 86 L80 112 Q60 116 40 112 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lower-back"/>
+      <!-- glutes -->
+      <path d="M30 112 Q60 118 90 112 L88 140 Q60 146 32 140 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-glute"/>
+      <!-- hamstrings -->
+      <path d="M32 140 Q44 138 48 142 L46 186 Q38 190 30 184 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-ham-l"/>
+      <path d="M88 140 Q76 138 72 142 L74 186 Q82 190 90 184 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-ham-r"/>
+      <!-- calves -->
+      <path d="M31 194 Q40 192 49 194 L47 238 Q40 242 33 238 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-calf-l"/>
+      <path d="M71 194 Q80 192 89 194 L87 238 Q80 242 73 238 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-calf-r"/>
+      <!-- knees back -->
+      <ellipse cx="40" cy="190" rx="10" ry="7" fill="#252830"/>
+      <ellipse cx="80" cy="190" rx="10" ry="7" fill="#252830"/>
+      <!-- feet -->
+      <ellipse cx="40" cy="248" rx="12" ry="6" fill="#252830"/>
+      <ellipse cx="80" cy="248" rx="12" ry="6" fill="#252830"/>
+      <text x="60" y="258" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="2">BACK</text>
+    </svg>
+    </div>
+    <div class="heatmap-legend">
+      <div class="heatmap-legend-item"><div class="heatmap-legend-dot" style="background:var(--c1);"></div>Primary</div>
+      <div class="heatmap-legend-item"><div class="heatmap-legend-dot" style="background:rgba(232,255,71,0.28);border:1px solid rgba(232,255,71,0.5);"></div>Secondary</div>
     </div>
   </div>
-  <div class="day-panel" id="panel-mon">
-    <div class="rest-card"><span class="rest-icon">☽</span><div class="rest-text"><strong>Monday — Rest day.</strong> Full recovery. Prioritise sleep and protein intake.</div></div>
   </div>
 
-  <!-- TUE -->
-  <div class="day-panel" id="panel-tue">
+  <div class="day-panels-wrap">
+  <div class="day-panel" id="panel-default">
+    <div style="text-align:center;padding:1.5rem 0;font-size:11px;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase;">Select a day above</div>
+  </div>
+  <div class="day-panel" id="panel-mon">
     <div class="day-card">
-      <div class="day-card-header"><div class="day-num c1">TUE</div><div class="day-meta"><div class="day-name c1">Chest + Triceps</div><div class="day-focus">Push-focused upper body · shoulders as finisher</div></div><div class="day-volume">10 exercises</div></div>
+      <div class="day-card-header"><div class="day-num c1">MON</div><div class="day-meta"><div class="day-name c1">Chest + Triceps</div><div class="day-focus">Push-focused upper body · shoulders as finisher</div></div><div class="day-volume">10 exercises</div></div>
       <div class="day-body">
         <div class="section"><div class="section-label"><span class="bar bar1"></span>Chest</div><div class="ex-list">
           <div class="ex-row" onclick="openModal('bench-press')"><span class="ex-name">Bench press</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">4 × 12</span></div>
@@ -477,6 +752,11 @@
         <p class="rest-note">⏱ 90 sec compounds · 60 sec isolation</p>
       </div>
     </div>
+  </div>
+
+  <!-- TUE — Hockey / Rest -->
+  <div class="day-panel" id="panel-tue">
+    <div class="rest-card"><span class="rest-icon">🏒</span><div class="rest-text"><strong>Tuesday — Hockey.</strong> Active recovery day. Let the gym rest, hit the ice.</div></div>
   </div>
 
   <!-- WED -->
@@ -783,11 +1063,17 @@
 <div class="page-header">
   <p class="eyebrow">Session History</p>
   <h1>Workout<br><em class="lo">Log.</em></h1>
-  <p class="subtitle">Record your sessions with exercises, sets, reps and weight. Tap any past session to expand it.</p>
 </div>
-<div class="wl-wrap">
 
-  <!-- LOG SESSION FORM -->
+<!-- INNER LOG TABS -->
+<div class="log-tabs">
+  <button class="log-tab active" id="lt-sessions" onclick="switchLogTab('sessions', this)">Sessions</button>
+  <button class="log-tab" id="lt-overview" onclick="switchLogTab('overview', this)">Weekly Overview</button>
+</div>
+
+<!-- TAB: SESSIONS -->
+<div class="log-tab-panel active" id="ltp-sessions">
+<div class="wl-wrap">
   <div class="wl-card" id="wl-form-card">
     <div class="wl-card-title-row">
       <div class="wl-card-title" id="wl-form-title">Start a session</div>
@@ -806,14 +1092,21 @@
       </div>
     </div>
   </div>
-
-  <!-- HISTORY -->
   <div id="wl-history"></div>
   <div id="wl-log-empty" class="wt-empty" style="display:none;">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted2);letter-spacing:0.1em;margin-bottom:8px;">NO SESSIONS YET</div>
     <div style="font-size:13px;color:var(--muted);">Start a new session above to begin logging.</div>
   </div>
 </div>
+</div>
+
+<!-- TAB: WEEKLY OVERVIEW -->
+<div class="log-tab-panel" id="ltp-overview">
+<div class="wl-wrap">
+  <div id="wo-content"></div>
+</div>
+</div>
+
 <footer style="margin-top:2.5rem;">All sessions saved locally in your browser</footer>
 </div>
 
@@ -1485,6 +1778,8 @@ function showDay(day) {
   document.querySelectorAll('.week-day').forEach(w => w.classList.remove('active'));
   document.getElementById('panel-' + day).classList.add('active');
   document.getElementById('wd-' + day).classList.add('active');
+  updateHeatmap(day);
+  injectMissedSection(day);
 }
 
 // ── GUIDE CARD TOGGLE ──
@@ -1583,6 +1878,7 @@ function addExerciseRow() {
       <span></span>
       <span class="wl-sets-col-label">Weight (kg)</span>
       <span class="wl-sets-col-label">Reps</span>
+      <span class="wl-sets-col-label">Done</span>
       <span></span>
     </div>
     <div class="wl-sets-list" id="wl-sets-${id}"></div>
@@ -1603,10 +1899,16 @@ function addSetRow(exId) {
     <span class="wl-set-num">${setNum}</span>
     <input class="wl-set-input" type="number" inputmode="decimal" min="0" max="999" step="0.5" placeholder="0">
     <input class="wl-set-input" type="number" inputmode="numeric" min="0" max="99" placeholder="0">
+    <button class="wl-set-check" onclick="toggleSetDone(this)" title="Mark done">✓</button>
     <button class="wl-set-del" onclick="removeSetRow('wl-set-${sid}', ${exId})">✕</button>`;
   list.appendChild(row);
-  // Focus the weight input on the new row
   setTimeout(() => row.querySelector('.wl-set-input').focus(), 50);
+}
+
+function toggleSetDone(btn) {
+  const row = btn.closest('.wl-set-row');
+  row.classList.toggle('set-done');
+  btn.classList.toggle('set-check-active');
 }
 
 function removeSetRow(rowId, exId) {
@@ -1659,6 +1961,7 @@ function saveSession() {
   cancelSession();
   renderWL();
   renderPBs();
+  renderStreak();
 }
 
 let deleteConfirmTimer = null;
@@ -1891,12 +2194,347 @@ document.addEventListener('visibilitychange', async () => {
   }
 });
 
+// ════════════════════════════════
+// STREAK TRACKER
+// ════════════════════════════════
+function calcStreak() {
+  const log = getWL();
+  if (!log.length) return { streak: 0, detail: 'Log sessions to start your streak' };
+
+  // Get unique weeks that had at least one session (Mon–Sun ISO weeks)
+  const getWeekKey = dateStr => {
+    const d = new Date(dateStr + 'T12:00:00');
+    const jan1 = new Date(d.getFullYear(), 0, 1);
+    const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+    return d.getFullYear() + '-W' + String(week).padStart(2, '0');
+  };
+
+  const weeks = [...new Set(log.map(s => getWeekKey(s.date)))].sort().reverse();
+  if (!weeks.length) return { streak: 0, detail: 'Log sessions to start your streak' };
+
+  const currentWeek = getWeekKey(new Date().toISOString().split('T')[0]);
+  const lastWeek = (() => {
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    return getWeekKey(d.toISOString().split('T')[0]);
+  })();
+
+  // Streak only counts if most recent logged week is current or last week
+  if (weeks[0] !== currentWeek && weeks[0] !== lastWeek) {
+    return { streak: 0, detail: 'Streak broken — get back in the gym!' };
+  }
+
+  let streak = 0;
+  let check = weeks[0] === currentWeek ? currentWeek : lastWeek;
+
+  for (const w of weeks) {
+    if (w === check) {
+      streak++;
+      // Move check back one week
+      const [yr, wk] = check.split('-W').map(Number);
+      const prev = new Date(yr, 0, 1 + (wk - 2) * 7);
+      check = getWeekKey(prev.toISOString().split('T')[0]);
+    } else {
+      break;
+    }
+  }
+
+  const sessionsThisWeek = log.filter(s => getWeekKey(s.date) === currentWeek).length;
+  const detail = streak > 0
+    ? `${sessionsThisWeek} session${sessionsThisWeek !== 1 ? 's' : ''} this week`
+    : 'Log sessions to start your streak';
+
+  return { streak, detail };
+}
+
+function renderStreak() {
+  const { streak, detail } = calcStreak();
+  document.getElementById('streak-num').textContent = streak;
+  document.getElementById('streak-detail').textContent = detail;
+  // Make flame bigger if streak is going
+  const flame = document.querySelector('.streak-flame');
+  if (flame) flame.style.fontSize = streak >= 4 ? '28px' : streak >= 1 ? '24px' : '20px';
+}
+
+// ════════════════════════════════
+// MUSCLE HEATMAP
+// ════════════════════════════════
+const MUSCLE_MAP = {
+  mon: {
+    primary: ['f-chest','f-shoulder-l','f-shoulder-r','b-tricep-l','b-tricep-r'],
+    secondary: ['f-bicep-l','f-bicep-r']
+  },
+  wed: {
+    primary: ['b-lat-l','b-lat-r','b-rhomboid','b-trap','f-bicep-l','f-bicep-r','f-forearm-l','f-forearm-r'],
+    secondary: ['b-rear-delt-l','b-rear-delt-r','b-lower-back']
+  },
+  thu: {
+    primary: ['f-quad-l','f-quad-r','b-ham-l','b-ham-r','b-glute','b-calf-l','b-calf-r'],
+    secondary: ['f-abs','f-oblique-l','f-oblique-r']
+  },
+  sat: {
+    primary: ['f-chest','b-lat-l','b-lat-r','b-rhomboid'],
+    secondary: ['b-tricep-l','b-tricep-r','f-bicep-l','f-bicep-r']
+  },
+  sun: {
+    primary: ['f-shoulder-l','f-shoulder-r','b-rear-delt-l','b-rear-delt-r','b-trap'],
+    secondary: ['f-bicep-l','f-bicep-r','f-forearm-l','f-forearm-r','b-tricep-l','b-tricep-r']
+  }
+};
+
+const DAY_LABELS = {
+  mon: 'Monday — Chest & Triceps',
+  wed: 'Wednesday — Back & Biceps',
+  thu: 'Thursday — Legs & Abs',
+  sat: 'Saturday — Chest & Back',
+  sun: 'Sunday — Shoulders & Arms'
+};
+
+function updateHeatmap(day) {
+  // Reset all muscles
+  document.querySelectorAll('[id^="f-"], [id^="b-"]').forEach(el => {
+    el.classList.remove('muscle-active', 'muscle-secondary');
+  });
+
+  const titleEl = document.getElementById('heatmap-title');
+  if (!day || !MUSCLE_MAP[day]) {
+    if (titleEl) titleEl.textContent = 'Tap a day to see muscles worked';
+    return;
+  }
+
+  const map = MUSCLE_MAP[day];
+  map.primary.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('muscle-active');
+  });
+  map.secondary.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('muscle-secondary');
+  });
+
+  if (titleEl) titleEl.textContent = DAY_LABELS[day] || '';
+}
+
+// ════════════════════════════════
+// LOG INNER TABS
+// ════════════════════════════════
+function switchLogTab(tab, btn) {
+  document.querySelectorAll('.log-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.log-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ltp-' + tab).classList.add('active');
+  if (tab === 'overview') renderWeeklyOverview();
+}
+
+// ════════════════════════════════
+// WEEKLY OVERVIEW
+// ════════════════════════════════
+const TRAINING_DAY_NAMES = { mon: 'Mon', wed: 'Wed', thu: 'Thu', sat: 'Sat', sun: 'Sun' };
+const TRAINING_DAY_ORDER = ['mon', 'wed', 'thu', 'sat', 'sun'];
+
+function getWeekStartDate(weeksAgo) {
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff - weeksAgo * 7);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+
+function dateToDay(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
+}
+
+function renderWeeklyOverview() {
+  const container = document.getElementById('wo-content');
+  const log = getWL();
+  const missed = getMissed();
+
+  // Build 8 weeks of data (current + 7 past)
+  const weeks = [];
+  for (let w = 0; w < 8; w++) {
+    const weekStart = getWeekStartDate(w);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+    const weekEndStr = weekEnd.toISOString().split('T')[0];
+
+    // Sessions this week
+    const sessions = log.filter(s => s.date >= weekStartStr && s.date <= weekEndStr);
+
+    // Build day data
+    const days = TRAINING_DAY_ORDER.map(dayKey => {
+      // What date is this day in this week?
+      const dayOffset = { mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6 };
+      const dayDate = new Date(weekStart);
+      dayDate.setDate(weekStart.getDate() + dayOffset[dayKey]);
+      const dayDateStr = dayDate.toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+      const isFuture = dayDateStr > today;
+
+      // Check if session logged on this day
+      const session = sessions.find(s => s.date === dayDateStr);
+
+      // Check if missed reason logged for this day+week
+      const missedKey = dayKey + '-' + weekStartStr;
+      const missedEntry = missed[missedKey];
+
+      return { dayKey, dayDateStr, isFuture, session, missedEntry };
+    });
+
+    const doneCount = days.filter(d => d.session).length;
+    const missedCount = days.filter(d => !d.session && !d.isFuture && d.missedEntry).length;
+
+    weeks.push({ weekStart, weekStartStr, weekEndStr, days, doneCount, missedCount });
+  }
+
+  // Check if any data exists
+  const hasData = weeks.some(w => w.doneCount > 0 || w.missedCount > 0);
+  if (!hasData) {
+    container.innerHTML = `<div class="wo-empty">
+      <div class="wo-empty-title">NO DATA YET</div>
+      <div class="wo-empty-sub">Log sessions or missed reasons to see your weekly overview.</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = weeks.map(week => {
+    const label = week.weekStart.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) + ' – ' +
+      new Date(week.weekEndStr + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+
+    const dayHTML = week.days.map(d => {
+      let dot, note = '';
+      if (d.isFuture) {
+        dot = '<div class="wo-day-dot future"></div>';
+      } else if (d.session) {
+        const exNames = d.session.exercises.map(e => e.name.split(' ')[0]).join(', ');
+        dot = '<div class="wo-day-dot done">✓</div>';
+        note = `<div class="wo-day-note" style="color:var(--c5);">${d.session.exercises.length} ex</div>`;
+      } else if (d.missedEntry) {
+        dot = '<div class="wo-day-dot missed">✕</div>';
+        note = `<div class="wo-day-note">${d.missedEntry.reason}</div>`;
+      } else {
+        dot = '<div class="wo-day-dot empty"></div>';
+      }
+      return `<div class="wo-day-cell">
+        <div class="wo-day-name">${TRAINING_DAY_NAMES[d.dayKey]}</div>
+        ${dot}
+        ${note}
+      </div>`;
+    }).join('');
+
+    const statText = week.doneCount > 0 || week.missedCount > 0
+      ? `<span>${week.doneCount}</span>/${week.days.length} sessions`
+      : 'No data';
+
+    return `<div class="wo-week">
+      <div class="wo-week-header">
+        <div class="wo-week-label">${label}</div>
+        <div class="wo-week-stat">${statText}</div>
+      </div>
+      <div class="wo-days-grid">${dayHTML}</div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════
+// MISSED SESSION
+// ════════════════════════════════
+const MISSED_KEY = 'myRoutine_missed';
+const TRAINING_DAYS = ['mon', 'wed', 'thu', 'sat', 'sun'];
+
+function getMissed() { try { return JSON.parse(localStorage.getItem(MISSED_KEY)) || {}; } catch { return {}; } }
+function saveMissed(m) { localStorage.setItem(MISSED_KEY, JSON.stringify(m)); }
+
+function getMissedKey(day) {
+  // Key = day + current week start (Monday)
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = (dow === 0 ? -6 : 1) - dow;
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() + diff);
+  return day + '-' + weekStart.toISOString().split('T')[0];
+}
+
+function injectMissedSection(day) {
+  // Only inject for training days
+  if (!TRAINING_DAYS.includes(day)) return;
+  const panel = document.getElementById('panel-' + day);
+  if (!panel) return;
+
+  // Remove any existing missed section
+  const existing = panel.querySelector('.missed-section');
+  if (existing) existing.remove();
+
+  const key = getMissedKey(day);
+  const missed = getMissed();
+  const entry = missed[key];
+
+  const section = document.createElement('div');
+  section.className = 'missed-section';
+
+  if (entry) {
+    // Already logged a reason this week
+    section.innerHTML = `
+      <div class="missed-logged show">
+        <div class="missed-logged-label">Missed this session</div>
+        <div class="missed-logged-reason">${entry.reason}</div>
+        <button class="missed-logged-clear" onclick="clearMissed('${day}')">clear</button>
+      </div>`;
+  } else {
+    section.innerHTML = `
+      <button class="missed-btn" onclick="toggleMissedForm('${day}')">Missed this session? Log a reason</button>
+      <div class="missed-form" id="missed-form-${day}">
+        <textarea class="missed-input" id="missed-input-${day}" placeholder="e.g. felt ill, work ran late, rest day needed..."></textarea>
+        <div class="missed-save-row">
+          <button class="missed-save" onclick="saveMissedEntry('${day}')">Save reason</button>
+          <button class="missed-cancel" onclick="toggleMissedForm('${day}')">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  // Append inside the day-card's day-body, after rest-note
+  const dayBody = panel.querySelector('.day-body');
+  if (dayBody) dayBody.appendChild(section);
+}
+
+function toggleMissedForm(day) {
+  const form = document.getElementById('missed-form-' + day);
+  if (form) {
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('missed-input-' + day).focus();
+    }
+  }
+}
+
+function saveMissedEntry(day) {
+  const input = document.getElementById('missed-input-' + day);
+  const reason = input ? input.value.trim() : '';
+  if (!reason) { input.focus(); return; }
+  const missed = getMissed();
+  const key = getMissedKey(day);
+  missed[key] = { reason, date: new Date().toISOString().split('T')[0] };
+  saveMissed(missed);
+  injectMissedSection(day);
+}
+
+function clearMissed(day) {
+  const missed = getMissed();
+  delete missed[getMissedKey(day)];
+  saveMissed(missed);
+  injectMissedSection(day);
+}
+
 // ── INIT ALL ──
 function initAll() {
   buildGuide();
   initWeight();
   renderWL();
   renderPBs();
+  renderStreak();
   const days = ['sun','mon','tue','wed','thu','fri','sat'];
   const today = days[new Date().getDay()];
   const todayEl = document.getElementById('wd-' + today);
@@ -1904,7 +2542,6 @@ function initAll() {
 }
 
 initAll();
-
 </script>
 </body>
 </html>
