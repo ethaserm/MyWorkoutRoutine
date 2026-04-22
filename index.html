@@ -1836,6 +1836,69 @@ function savePBs(p) { localStorage.setItem(PB_KEY, JSON.stringify(p)); }
 
 let wlActive = false;
 
+// Map of training day -> exercises in order (matching the routine)
+const DAY_EXERCISES = {
+  mon: [
+    { name: 'Bench press',              sets: 4, reps: '12' },
+    { name: 'Incline bench press',      sets: 4, reps: '12' },
+    { name: 'Low-to-High Flye',         sets: 4, reps: '12' },
+    { name: 'Tricep Pushdown',          sets: 3, reps: '10' },
+    { name: 'Overhead Tricep Extension',sets: 3, reps: '10' },
+    { name: 'Tricep Dips',              sets: 3, reps: '10' },
+    { name: 'Front Raises',             sets: 3, reps: '8'  },
+    { name: 'Lateral Raises',           sets: 3, reps: '8'  },
+    { name: 'Reverse Raises (Rear Delt Flye)', sets: 3, reps: '8' },
+  ],
+  wed: [
+    { name: 'Deadlift',                 sets: 3, reps: '10' },
+    { name: 'Single Arm Dumbbell Row',  sets: 3, reps: '10' },
+    { name: 'Shrugs',                   sets: 3, reps: '10' },
+    { name: 'Bicep Curls',              sets: 3, reps: '10' },
+    { name: 'Cross Curls (Cross-body)', sets: 3, reps: '10' },
+    { name: 'Single Arm Curls (Concentration)', sets: 3, reps: '10' },
+    { name: 'Hammer Curls',             sets: 3, reps: '10' },
+    { name: 'Inward Finger Rolls',      sets: 3, reps: '15' },
+    { name: 'Single Wrist Curls',       sets: 3, reps: '15' },
+    { name: 'Finger Curls',             sets: 3, reps: '15' },
+  ],
+  thu: [
+    { name: 'Weighted Squats',          sets: 3, reps: '10' },
+    { name: 'Weighted Lunges',          sets: 3, reps: '10' },
+    { name: 'Romanian Deadlift (RDL)',  sets: 3, reps: '10' },
+    { name: 'Goblet Squat',             sets: 4, reps: '12' },
+    { name: 'Single Dumbbell Squat',    sets: 3, reps: '10' },
+    { name: 'Elbow-to-Knee Crunches',   sets: 3, reps: '10' },
+    { name: 'Leg Raises',               sets: 3, reps: '10' },
+    { name: 'V-Ups',                    sets: 3, reps: '10' },
+    { name: 'Russian Twists',           sets: 3, reps: '10' },
+  ],
+  sat: [
+    { name: 'Bench press',              sets: 4, reps: '8'  },
+    { name: 'Incline bench press',      sets: 3, reps: '10' },
+    { name: 'Low-to-High Flye',         sets: 3, reps: '12' },
+    { name: 'Deadlift',                 sets: 3, reps: '8'  },
+    { name: 'Single Arm Dumbbell Row',  sets: 3, reps: '10' },
+    { name: 'Shrugs',                   sets: 3, reps: '12' },
+  ],
+  sun: [
+    { name: 'Overhead Press',           sets: 4, reps: '8'  },
+    { name: 'Lateral Raises',           sets: 4, reps: '8'  },
+    { name: 'Front Raises',             sets: 4, reps: '8'  },
+    { name: 'Reverse Raises (Rear Delt Flye)', sets: 4, reps: '8' },
+    { name: 'Bicep Curls',              sets: 3, reps: '10' },
+    { name: 'Hammer Curls',             sets: 3, reps: '10' },
+    { name: 'Cross Curls (Cross-body)', sets: 3, reps: '10' },
+    { name: 'Inward Finger Rolls',      sets: 3, reps: '15' },
+    { name: 'Single Wrist Curls',       sets: 3, reps: '15' },
+    { name: 'Finger Curls',             sets: 3, reps: '15' },
+  ],
+};
+
+function getTodayTrainingDay() {
+  const days = ['sun','mon','tue','wed','thu','fri','sat'];
+  return days[new Date().getDay()];
+}
+
 function startSession() {
   if (wlActive) return;
   wlActive = true;
@@ -1844,7 +1907,19 @@ function startSession() {
   document.getElementById('wl-session-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('wl-exercises-list').innerHTML = '';
   document.getElementById('wl-session-note').value = '';
-  addExerciseRow();
+
+  const today = getTodayTrainingDay();
+  const todayExercises = DAY_EXERCISES[today];
+
+  if (todayExercises) {
+    // Auto-populate today's exercises with correct sets
+    todayExercises.forEach(ex => {
+      addExerciseRowWithData(ex.name, ex.sets);
+    });
+  } else {
+    // Rest day or unknown — just add one blank row
+    addExerciseRow();
+  }
 }
 
 function cancelSession() {
@@ -1855,8 +1930,12 @@ function cancelSession() {
 
 let wlExCounter = 0;
 function addExerciseRow() {
+  addExerciseRowWithData('', 1);
+}
+
+function addExerciseRowWithData(exerciseName, numSets) {
   const id = wlExCounter++;
-  const exNames = Object.values(EXERCISES).map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+  const exNames = Object.values(EXERCISES).map(e => `<option value="${e.name}"${e.name === exerciseName ? ' selected' : ''}>${e.name}</option>`).join('');
   const div = document.createElement('div');
   div.className = 'wl-ex-row';
   div.id = 'wl-ex-' + id;
@@ -1875,7 +1954,10 @@ function addExerciseRow() {
     <div class="wl-sets-list" id="wl-sets-${id}"></div>
     <button class="wl-add-set" onclick="addSetRow(${id})">+ Add set</button>`;
   document.getElementById('wl-exercises-list').appendChild(div);
-  addSetRow(id);
+  // Add the correct number of set rows
+  for (let i = 0; i < numSets; i++) {
+    addSetRow(id);
+  }
 }
 
 let wlSetCounter = 0;
