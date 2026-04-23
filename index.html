@@ -73,6 +73,59 @@
 })();
 </script>
 
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyT3wRMvkB_J6DPDH234BLRYJI8n8s3hg",
+  authDomain: "workouttracker-17830.firebaseapp.com",
+  projectId: "workouttracker-17830",
+  storageBucket: "workouttracker-17830.firebasestorage.app",
+  messagingSenderId: "792113873446",
+  appId: "1:792113873446:web:1cc623862b04d130addce7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const USER_DOC = 'users/ethan';
+
+// ── Save to Firestore ──
+window.fbSave = async function(key, data) {
+  try {
+    await setDoc(doc(db, USER_DOC + '/data', key), { value: JSON.stringify(data) }, { merge: true });
+  } catch(e) { console.warn('Firebase save failed:', e); }
+};
+
+// ── Load all data from Firestore on start ──
+window.fbLoadAll = async function() {
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed'];
+  const lsKeys = {
+    workoutLog: 'myRoutine_workoutLog',
+    personalBests: 'myRoutine_personalBests',
+    weightLog: 'myRoutine_weightLog',
+    missed: 'myRoutine_missed'
+  };
+  try {
+    await Promise.all(keys.map(async key => {
+      const snap = await getDoc(doc(db, USER_DOC + '/data', key));
+      if (snap.exists()) {
+        const val = snap.data().value;
+        localStorage.setItem(lsKeys[key], val);
+      }
+    }));
+    console.log('Firebase data loaded');
+  } catch(e) { console.warn('Firebase load failed, using local data:', e); }
+  // Now init the app
+  if (window.initAll) window.initAll();
+};
+
+// Show sync indicator
+window.fbReady = true;
+window.fbLoadAll();
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
 
@@ -1167,6 +1220,7 @@ function getLog() {
 
 function saveLog(log) {
   localStorage.setItem(LS_KEY, JSON.stringify(log));
+  if(window.fbSave) fbSave('weightLog', log);
 }
 
 function toggleUnit() {
@@ -1830,9 +1884,9 @@ const WL_KEY = 'myRoutine_workoutLog';
 const PB_KEY = 'myRoutine_personalBests';
 
 function getWL() { try { return JSON.parse(localStorage.getItem(WL_KEY)) || []; } catch { return []; } }
-function saveWL(l) { localStorage.setItem(WL_KEY, JSON.stringify(l)); }
+function saveWL(l) { localStorage.setItem(WL_KEY, JSON.stringify(l)); if(window.fbSave) fbSave('workoutLog', l); }
 function getPBs() { try { return JSON.parse(localStorage.getItem(PB_KEY)) || {}; } catch { return {}; } }
-function savePBs(p) { localStorage.setItem(PB_KEY, JSON.stringify(p)); }
+function savePBs(p) { localStorage.setItem(PB_KEY, JSON.stringify(p)); if(window.fbSave) fbSave('personalBests', p); }
 
 let wlActive = false;
 
@@ -2519,7 +2573,7 @@ const MISSED_KEY = 'myRoutine_missed';
 const TRAINING_DAYS = ['mon', 'wed', 'thu', 'sat', 'sun'];
 
 function getMissed() { try { return JSON.parse(localStorage.getItem(MISSED_KEY)) || {}; } catch { return {}; } }
-function saveMissed(m) { localStorage.setItem(MISSED_KEY, JSON.stringify(m)); }
+function saveMissed(m) { localStorage.setItem(MISSED_KEY, JSON.stringify(m)); if(window.fbSave) fbSave('missed', m); }
 
 function getMissedKey(day) {
   // Key = day + current week start (Monday)
@@ -2615,8 +2669,10 @@ function initAll() {
     if (todayEl && !todayEl.classList.contains('rest-day')) showDay(today);
   } catch(e) { console.error('showDay error:', e); }
 }
+window.initAll = initAll;
 
-initAll();
+// Only call initAll directly if Firebase module hasn't taken over
+setTimeout(() => { if (!window.fbReady) initAll(); }, 800);
 </script>
 </body>
 </html>
