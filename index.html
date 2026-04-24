@@ -399,7 +399,7 @@ window.fbLoadAll();
 
   /* ── BOTTOM NAV ── */
   html, body { height: 100%; }
-  body { padding-bottom: 64px; overscroll-behavior: none; }
+  body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); overscroll-behavior: none; }
   .bottom-nav {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     z-index: 90;
@@ -408,22 +408,21 @@ window.fbLoadAll();
     border-top: 0.5px solid rgba(255,255,255,0.08);
     border-left: 0.5px solid rgba(255,255,255,0.06);
     border-right: 0.5px solid rgba(255,255,255,0.06);
-    border-radius: 0 0 0 0;
-    display: flex; height: 60px;
+    display: flex; 
     width: 100%; max-width: 760px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    align-items: flex-start;
     flex-shrink: 0;
-    align-items: stretch;
   }
   .tab-item {
     flex: 1; display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 3px; cursor: pointer; border: none;
     background: transparent; color: rgba(255,255,255,0.28);
     font-family: 'DM Sans', sans-serif; transition: color 0.2s;
-    -webkit-tap-highlight-color: transparent; padding: 6px 4px 4px;
-    position: relative; max-height: 60px; overflow: hidden;
-    /* Prevent any child content from expanding the tab */
-    min-width: 0;
+    -webkit-tap-highlight-color: transparent;
+    padding: 8px 4px 4px;
+    height: 60px; flex-shrink: 0;
+    position: relative; min-width: 0;
   }
   .tab-item:active { opacity: 0.5; transform: scale(0.95); }
   .tab-icon {
@@ -1255,7 +1254,7 @@ function logWeight() {
   }
   // convert to kg for storage
   const stored = wtUnit === 'lbs' ? parseFloat((val / 2.20462).toFixed(2)) : val;
-  const date = dateInput.value || new Date().toISOString().split('T')[0];
+  const date = dateInput.value || toLocalDateStr(new Date());
   const log = getLog();
   // replace if same date
   const idx = log.findIndex(e => e.date === date);
@@ -1353,7 +1352,7 @@ function drawChart(log) {
   // Filter by range
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - wtRangeDays);
-  const cutoffStr = cutoff.toISOString().split('T')[0];
+  const cutoffStr = toLocalDateStr(cutoff);
   const filtered = wtRangeDays >= 99999 ? log : log.filter(e => e.date >= cutoffStr);
   if (filtered.length < 1) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
 
@@ -1450,7 +1449,7 @@ function drawChart(log) {
 
 function initWeight() {
   // Set today's date as default
-  document.getElementById('wt-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('wt-date').value = toLocalDateStr(new Date());
   renderWeight();
   window.addEventListener('resize', () => { if (getLog().length) drawChart(getLog()); });
 }
@@ -1965,7 +1964,7 @@ function startSession() {
   wlActive = true;
   document.getElementById('wl-session-editor').style.display = 'block';
   document.getElementById('wl-start-btn').style.display = 'none';
-  document.getElementById('wl-session-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('wl-session-date').value = toLocalDateStr(new Date());
   document.getElementById('wl-exercises-list').innerHTML = '';
   document.getElementById('wl-session-note').value = '';
 
@@ -2332,7 +2331,7 @@ function savePB(id, name) {
   const reps = parseInt(document.getElementById('pbi-reps-' + id).value);
   if (isNaN(kg) || isNaN(reps) || reps < 1) { alert('Enter valid kg and reps.'); return; }
   const pbs = getPBs();
-  const date = new Date().toISOString().split('T')[0];
+  const date = toLocalDateStr(new Date());
   pbs[name] = { kg, reps, date };
   savePBs(pbs);
   closePBEditor(id);
@@ -2444,10 +2443,10 @@ function calcStreak() {
   const weeks = [...new Set(log.map(s => getWeekKey(s.date)))].sort().reverse();
   if (!weeks.length) return { streak: 0, detail: 'Log sessions to start your streak' };
 
-  const currentWeek = getWeekKey(new Date().toISOString().split('T')[0]);
+  const currentWeek = getWeekKey(toLocalDateStr(new Date()));
   const lastWeek = (() => {
     const d = new Date(); d.setDate(d.getDate() - 7);
-    return getWeekKey(d.toISOString().split('T')[0]);
+    return getWeekKey(toLocalDateStr(d));
   })();
 
   // Streak only counts if most recent logged week is current or last week
@@ -2464,7 +2463,7 @@ function calcStreak() {
       // Move check back one week
       const [yr, wk] = check.split('-W').map(Number);
       const prev = new Date(yr, 0, 1 + (wk - 2) * 7);
-      check = getWeekKey(prev.toISOString().split('T')[0]);
+      check = getWeekKey(toLocalDateStr(prev));
     } else {
       break;
     }
@@ -2578,6 +2577,13 @@ function dateToDay(dateStr) {
   return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
 }
 
+function toLocalDateStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function renderWeeklyOverview() {
   const container = document.getElementById('wo-content');
   const log = getWL();
@@ -2590,26 +2596,22 @@ function renderWeeklyOverview() {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
 
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-    const weekEndStr = weekEnd.toISOString().split('T')[0];
+    const weekStartStr = toLocalDateStr(weekStart);
+    const weekEndStr = toLocalDateStr(weekEnd);
 
     // Sessions this week
     const sessions = log.filter(s => s.date >= weekStartStr && s.date <= weekEndStr);
 
     // Build day data
     const days = TRAINING_DAY_ORDER.map(dayKey => {
-      // What date is this day in this week?
       const dayOffset = { mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6 };
       const dayDate = new Date(weekStart);
       dayDate.setDate(weekStart.getDate() + dayOffset[dayKey]);
-      const dayDateStr = dayDate.toISOString().split('T')[0];
-      const today = new Date().toISOString().split('T')[0];
+      const dayDateStr = toLocalDateStr(dayDate);
+      const today = toLocalDateStr(new Date());
       const isFuture = dayDateStr > today;
 
-      // Check if session logged on this day
       const session = sessions.find(s => s.date === dayDateStr);
-
-      // Check if missed reason logged for this day+week
       const missedKey = dayKey + '-' + weekStartStr;
       const missedEntry = missed[missedKey];
 
@@ -2688,7 +2690,7 @@ function getMissedKey(day) {
   const diff = (dow === 0 ? -6 : 1) - dow;
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() + diff);
-  return day + '-' + weekStart.toISOString().split('T')[0];
+  return day + '-' + toLocalDateStr(weekStart);
 }
 
 function injectMissedSection(day) {
@@ -2749,7 +2751,7 @@ function saveMissedEntry(day) {
   if (!reason) { input.focus(); return; }
   const missed = getMissed();
   const key = getMissedKey(day);
-  missed[key] = { reason, date: new Date().toISOString().split('T')[0] };
+  missed[key] = { reason, date: toLocalDateStr(new Date()) };
   saveMissed(missed);
   injectMissedSection(day);
 }
