@@ -100,33 +100,51 @@ window.fbSave = async function(key, data) {
 
 // ── Load all data from Firestore on start ──
 window.fbLoadAll = async function() {
-  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'photos'];
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed'];
   const lsKeys = {
     workoutLog: 'myRoutine_workoutLog',
     personalBests: 'myRoutine_personalBests',
     weightLog: 'myRoutine_weightLog',
-    missed: 'myRoutine_missed',
-    photos: 'myRoutine_photos'
+    missed: 'myRoutine_missed'
   };
   try {
     await Promise.all(keys.map(async key => {
       const snap = await getDoc(doc(db, USER_DOC + '/data', key));
-      if (snap.exists()) {
-        const val = snap.data().value;
-        localStorage.setItem(lsKeys[key], val);
-      }
+      if (snap.exists()) localStorage.setItem(lsKeys[key], snap.data().value);
     }));
+    // Load photos index then each photo individually
+    const indexSnap = await getDoc(doc(db, USER_DOC + '/data', 'photosIndex'));
+    if (indexSnap.exists()) {
+      const index = JSON.parse(indexSnap.data().value);
+      const photos = await Promise.all(index.map(async meta => {
+        const photoSnap = await getDoc(doc(db, USER_DOC + '/data', 'photo_' + meta.id));
+        return photoSnap.exists() ? JSON.parse(photoSnap.data().value) : meta;
+      }));
+      localStorage.setItem('myRoutine_photos', JSON.stringify(photos));
+    }
     console.log('Firebase data loaded');
   } catch(e) { console.warn('Firebase load failed, using local data:', e); }
   // Now init the app with fresh data
   if (window.initAll) window.initAll();
   // Re-render streak specifically since it needs session data
   setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 100);
+  // Dismiss loader - minimum 2.5 seconds so it doesn't flash
+  setTimeout(dismissLoader, 2500);
 };
 
 // Show sync indicator
 window.fbReady = true;
 window.fbLoadAll();
+
+// Fallback — dismiss loader after 5s if Firebase is slow/offline
+setTimeout(dismissLoader, 5000);
+
+function dismissLoader() {
+  const loader = document.getElementById('app-loader');
+  if (!loader || loader.style.display === 'none') return;
+  loader.style.opacity = '0';
+  setTimeout(() => { loader.style.display = 'none'; }, 400);
+}
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -219,6 +237,9 @@ window.fbLoadAll();
   /* ── PHOTOS ── */
   .photo-upload-btn { display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 20px; border-radius:10px; transition:all 0.15s; }
   .photo-upload-btn:hover { border-color:var(--c5); color:var(--c5); }
+  .pump-btn { font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; padding:9px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .pump-btn.active-pump { background:rgba(232,255,71,0.12); border-color:var(--c1); color:var(--c1); }
+  .pump-btn.active-nopump { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.2); color:var(--text); }
   .photo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:4px; }
   .photo-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.15s; position:relative; }
   .photo-card:hover { border-color:rgba(255,255,255,0.2); }
@@ -226,15 +247,20 @@ window.fbLoadAll();
   .photo-card img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
   .photo-card-info { padding:8px 10px; }
   .photo-card-label { font-size:12px; font-weight:600; color:var(--text); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .photo-card-meta { font-size:10px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .photo-card-meta { font-size:10px; color:var(--muted); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
   .photo-card-tag { background:var(--surface2); border-radius:4px; padding:1px 6px; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; }
-  .photo-card-del { position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); border:none; color:rgba(255,255,255,0.7); width:26px; height:26px; border-radius:50%; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; }
-  .photo-card:hover .photo-card-del { opacity:1; }
+  .photo-card-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.72); display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; border-radius:12px 12px 0 0; }
+  .photo-card-overlay.visible { display:flex; }
+  .photo-overlay-btn { display:flex; align-items:center; gap:7px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:10px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.12); color:white; cursor:pointer; width:140px; justify-content:center; }
+  .photo-overlay-btn:active { background:rgba(255,255,255,0.22); }
+  .photo-overlay-del { border-color:rgba(255,100,70,0.4); background:rgba(255,100,70,0.12); color:#FF6B47; }
+  .photo-overlay-del { border-color:rgba(255,107,71,0.4); background:rgba(255,107,71,0.1); color:#FF6B47; }
+  .photo-overlay-del:hover { background:rgba(255,107,71,0.25); }
   .log-tabs { max-width: 760px; margin: 0 auto 1rem; display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
   .log-tab { font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; padding: 8px 16px; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; text-transform: uppercase; }
   .log-tab.active { color: #FF9F47; border-bottom-color: #FF9F47; }
-  .log-tab-panel { display: none; }
-  .log-tab-panel.active { display: block; animation: fadeIn 0.18s ease; }
+  .log-tab-panel { display: none; overflow: hidden; }
+  .log-tab-panel.active { display: block; animation: fadeIn 0.18s ease; overflow: visible; }
 
   /* ── WEEKLY OVERVIEW ── */
   .wo-week { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
@@ -481,8 +507,13 @@ window.fbLoadAll();
   .wl-note-input:focus { border-color: #FF9F47; }
   .wl-note-input::placeholder { color: var(--muted2); }
 
-  .wl-ex-row { background: var(--surface2); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .wl-ex-row { background: var(--surface2); border-radius: 10px; padding: 12px; margin-bottom: 8px; transition: box-shadow 0.15s, opacity 0.15s; }
+  .wl-ex-row.dragging { opacity: 0.4; box-shadow: none; }
+  .wl-ex-row.drag-over { box-shadow: 0 -2px 0 0 var(--c1); }
   .wl-ex-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .wl-ex-drag { cursor: grab; color: var(--muted2); padding: 4px 2px; flex-shrink: 0; touch-action: none; display: flex; align-items: center; }
+  .wl-ex-drag:active { cursor: grabbing; }
+  .wl-ex-drag svg { display: block; }
   .wl-ex-name-select { flex: 1; background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); font-family: 'DM Sans',sans-serif; font-size: 13px; padding: 8px 10px; outline: none; cursor: pointer; }
   .wl-ex-name-select:focus { border-color: #FF9F47; }
   .wl-ex-del { font-size: 11px; color: var(--muted2); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.1s; white-space: nowrap; }
@@ -609,10 +640,50 @@ window.fbLoadAll();
 </head>
 <body>
 
-
-
-</head>
-<body>
+<!-- LOADING SCREEN -->
+<div id="app-loader" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#0e0e0e;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;
+  transition:opacity 0.4s ease;
+">
+  <svg viewBox="0 0 280 340" width="90" xmlns="http://www.w3.org/2000/svg">
+    <rect width="280" height="340" rx="48" fill="#111"/>
+    <rect x="96" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <rect x="178" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
+    <rect x="91" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
+    <rect x="173" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
+    <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="44" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="55" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="62" y="84" width="156" height="9" rx="4.5" fill="#2a2a2a" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <rect x="218" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="225" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="236" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="52" y="196" width="176" height="13" rx="5" fill="#1e1e1e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <circle cx="82" cy="186" r="13" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="95" y1="186" x2="178" y2="186" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <line x1="112" y1="186" x2="108" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="152" y1="186" x2="156" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="178" y1="186" x2="198" y2="212" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="198" y1="212" x2="192" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="178" y1="186" x2="206" y2="208" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="206" y1="208" x2="204" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="24" y1="252" x2="256" y2="252" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="140" y="282" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="3">MY</text>
+    <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
+  </svg>
+  <!-- spinner -->
+  <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2.5"/>
+    <circle cx="16" cy="16" r="12" fill="none" stroke="#E8FF47" stroke-width="2.5"
+      stroke-linecap="round" stroke-dasharray="20 56"
+      transform="rotate(-90 16 16)">
+      <animateTransform attributeName="transform" type="rotate" from="-90 16 16" to="270 16 16" dur="0.9s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+</div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -1216,6 +1287,10 @@ window.fbLoadAll();
         <option value="abs">Abs / Core</option>
       </select>
       <input type="date" id="photo-date" class="wt-date-input">
+      <div style="display:flex;gap:8px;">
+        <button id="pump-yes" onclick="setPump(true)" class="pump-btn" style="flex:1;">💪 Pump</button>
+        <button id="pump-no" onclick="setPump(false)" class="pump-btn" style="flex:1;">😴 No pump</button>
+      </div>
     </div>
     <div class="wl-save-row" style="margin-top:12px;">
       <button class="wl-save-btn" onclick="savePhoto()">Save photo</button>
@@ -1371,10 +1446,39 @@ window.fbLoadAll();
 </div>
 </div>
 
-<!-- Comparison modal -->
+<!-- Photo edit modal -->
+<div id="photo-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:flex-end;justify-content:center;">
+  <div style="background:#1a1a1a;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:760px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:16px;">Edit Photo</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input type="text" id="edit-photo-name" class="wl-note-input" placeholder="Label">
+      <select id="edit-photo-body-part" class="wl-ex-name-select">
+        <option value="">— Body part —</option>
+        <option value="full">Full body</option>
+        <option value="chest">Chest</option>
+        <option value="back">Back</option>
+        <option value="shoulders">Shoulders</option>
+        <option value="arms">Arms / Biceps</option>
+        <option value="legs">Legs</option>
+        <option value="abs">Abs / Core</option>
+      </select>
+      <input type="date" id="edit-photo-date" class="wt-date-input">
+      <div style="display:flex;gap:8px;">
+        <button id="edit-pump-yes" onclick="setEditPump(true)" class="pump-btn" style="flex:1;">💪 Pump</button>
+        <button id="edit-pump-no" onclick="setEditPump(false)" class="pump-btn" style="flex:1;">😴 No pump</button>
+      </div>
+    </div>
+    <div class="wl-save-row" style="margin-top:16px;">
+      <button class="wl-save-btn" onclick="savePhotoEdit()">Save</button>
+      <button class="wl-cancel-btn" onclick="closePhotoEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="photo-compare-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:200;padding:20px;overflow-y:auto;">
-  <button onclick="closeComparison()" style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">✕</button>
-  <div id="photo-compare-content" style="display:flex;gap:12px;margin-top:40px;align-items:flex-start;"></div>
+  <button onclick="closeComparison()" style="position:fixed;top:calc(env(safe-area-inset-top, 16px) + 16px);right:16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;z-index:201;display:flex;align-items:center;justify-content:center;">✕</button>
+  <div id="photo-compare-content" style="display:flex;gap:12px;margin-top:calc(env(safe-area-inset-top, 16px) + 56px);align-items:flex-start;"></div>
 </div>
 
 
@@ -2181,14 +2285,13 @@ function startSession() {
   const todayExercises = DAY_EXERCISES[today];
 
   if (todayExercises) {
-    // Auto-populate today's exercises with correct sets
     todayExercises.forEach(ex => {
-      addExerciseRowWithData(ex.name, ex.sets);
+      addExerciseRowWithData(ex.name, 1);
     });
   } else {
-    // Rest day or unknown — just add one blank row
     addExerciseRow();
   }
+  initExerciseDrag();
 }
 
 function cancelSession() {
@@ -2224,6 +2327,9 @@ function addExerciseRowWithData(exerciseName, numSets) {
   div.id = 'wl-ex-' + id;
   div.innerHTML = `
     <div class="wl-ex-header">
+      <span class="wl-ex-drag" title="Drag to reorder">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </span>
       <select class="wl-ex-name-select"><option value="">— Select exercise —</option>${exNames}</select>
       <button class="wl-ex-del" onclick="this.closest('.wl-ex-row').remove()">✕</button>
     </div>
@@ -2447,6 +2553,9 @@ function editSession(id) {
     div.id = 'wl-ex-' + rowId;
     div.innerHTML = `
       <div class="wl-ex-header">
+        <span class="wl-ex-drag" title="Drag to reorder">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </span>
         <select class="wl-ex-name-select"><option value="">— Select exercise —</option>${exNames}</select>
         <button class="wl-ex-del" onclick="this.closest('.wl-ex-row').remove()">✕</button>
       </div>
@@ -2477,6 +2586,7 @@ function editSession(id) {
 
   // Scroll to editor
   document.getElementById('wl-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  initExerciseDrag();
 }
 
 let wlEditingId = null;
@@ -2894,7 +3004,85 @@ let photoCompareIds = [];
 let currentPhotoFilter = 'all';
 
 function getPhotos() { try { return JSON.parse(localStorage.getItem(PHOTOS_KEY)) || []; } catch { return []; } }
-function savePhotos(p) { localStorage.setItem(PHOTOS_KEY, JSON.stringify(p)); if(window.fbSave) fbSave('photos', p); }
+function savePhotos(p) {
+  localStorage.setItem(PHOTOS_KEY, JSON.stringify(p));
+  // Save each photo as its own Firebase doc to avoid 1MB limit
+  if (window.fbSave) {
+    p.forEach(photo => fbSave('photo_' + photo.id, photo));
+    // Save index (without image data) for fast loading
+    const index = p.map(({ data, ...rest }) => rest);
+    fbSave('photosIndex', index);
+  }
+}
+
+let currentPump = null;
+
+function setPump(isPump) {
+  currentPump = isPump;
+  document.getElementById('pump-yes').className = 'pump-btn' + (isPump ? ' active-pump' : '');
+  document.getElementById('pump-no').className = 'pump-btn' + (!isPump ? ' active-nopump' : '');
+}
+
+let currentEditPhotoId = null;
+let currentEditPump = null;
+
+function togglePhotoOverlay(id) {
+  if (photoCompareMode) return;
+  // Hide all other overlays first
+  document.querySelectorAll('.photo-card-overlay').forEach(o => {
+    if (o.id !== 'poverlay-' + id) o.classList.remove('visible');
+  });
+  const overlay = document.getElementById('poverlay-' + id);
+  if (overlay) overlay.classList.toggle('visible');
+}
+
+function openPhotoEdit(id) {
+  const photo = getPhotos().find(p => p.id === Number(id));
+  if (!photo) return;
+  currentEditPhotoId = id;
+  currentEditPump = photo.pump !== undefined ? photo.pump : null;
+  document.getElementById('edit-photo-name').value = photo.name || '';
+  document.getElementById('edit-photo-body-part').value = photo.bodyPart || '';
+  document.getElementById('edit-photo-date').value = photo.date || '';
+  document.getElementById('edit-pump-yes').className = 'pump-btn' + (currentEditPump === true ? ' active-pump' : '');
+  document.getElementById('edit-pump-no').className = 'pump-btn' + (currentEditPump === false ? ' active-nopump' : '');
+  const modal = document.getElementById('photo-edit-modal');
+  modal.style.display = 'flex';
+  // Close overlay
+  const overlay = document.getElementById('poverlay-' + id);
+  if (overlay) overlay.classList.remove('visible');
+}
+
+function setEditPump(isPump) {
+  currentEditPump = isPump;
+  document.getElementById('edit-pump-yes').className = 'pump-btn' + (isPump ? ' active-pump' : '');
+  document.getElementById('edit-pump-no').className = 'pump-btn' + (!isPump ? ' active-nopump' : '');
+}
+
+function savePhotoEdit() {
+  const photos = getPhotos();
+  const idx = photos.findIndex(p => p.id === Number(currentEditPhotoId));
+  if (idx === -1) return;
+  photos[idx].name = document.getElementById('edit-photo-name').value.trim() || photos[idx].name;
+  photos[idx].bodyPart = document.getElementById('edit-photo-body-part').value;
+  photos[idx].date = document.getElementById('edit-photo-date').value;
+  photos[idx].pump = currentEditPump;
+  savePhotos(photos);
+  closePhotoEdit();
+  renderPhotos();
+}
+
+function closePhotoEdit() {
+  document.getElementById('photo-edit-modal').style.display = 'none';
+  currentEditPhotoId = null;
+}
+
+// Close overlay when tapping outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.photo-card')) {
+    document.querySelectorAll('.photo-card-overlay').forEach(o => o.classList.remove('visible'));
+  }
+});
 
 function togglePoseGuide() {
   const body = document.getElementById('pose-guide-body');
@@ -2904,17 +3092,36 @@ function togglePoseGuide() {
   btn.textContent = hidden ? 'Hide' : 'Show';
 }
 
+function compressImage(dataUrl, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 function handlePhotoUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
-    currentPhotoData = ev.target.result;
+  reader.onload = async ev => {
+    // Compress to max 800px wide, 0.7 quality — keeps it under Firebase 1MB limit
+    currentPhotoData = await compressImage(ev.target.result, 1200, 0.85);
     document.getElementById('photo-preview').src = currentPhotoData;
     document.getElementById('photo-form').style.display = 'block';
     document.getElementById('photo-date').value = toLocalDateStr(new Date());
     document.getElementById('photo-name').value = '';
     document.getElementById('photo-body-part').value = '';
+    currentPump = null;
+    document.getElementById('pump-yes').className = 'pump-btn';
+    document.getElementById('pump-no').className = 'pump-btn';
     document.getElementById('photo-form').scrollIntoView({ behavior: 'smooth' });
   };
   reader.readAsDataURL(file);
@@ -2928,7 +3135,7 @@ function savePhoto() {
   const date = document.getElementById('photo-date').value || toLocalDateStr(new Date());
 
   const photos = getPhotos();
-  photos.unshift({ id: Date.now(), name, bodyPart, date, data: currentPhotoData });
+  photos.unshift({ id: Date.now(), name, bodyPart, date, pump: currentPump, data: currentPhotoData });
   savePhotos(photos);
 
   currentPhotoData = null;
@@ -3020,18 +3227,153 @@ function renderPhotos() {
 
   grid.innerHTML = photos.map(p => {
     const isSelected = photoCompareIds.includes(p.id);
-    return `<div class="photo-card${isSelected ? ' compare-selected' : ''}" onclick="${photoCompareMode ? `togglePhotoCompare(${p.id})` : ''}">
+    return `<div class="photo-card${isSelected ? ' compare-selected' : ''}" id="pcard-${p.id}" onclick="${photoCompareMode ? `togglePhotoCompare(${p.id})` : `togglePhotoOverlay(${p.id})`}">
       <img src="${p.data}" loading="lazy">
+      <div class="photo-card-overlay" id="poverlay-${p.id}">
+        <button class="photo-overlay-btn" onclick="event.stopPropagation();openPhotoEdit(${p.id})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="photo-overlay-btn photo-overlay-del" onclick="event.stopPropagation();deletePhoto(${p.id})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Delete
+        </button>
+      </div>
       <div class="photo-card-info">
         <div class="photo-card-label">${p.name}</div>
         <div class="photo-card-meta">
           <span>${p.date}</span>
           ${p.bodyPart ? `<span class="photo-card-tag">${bodyPartLabels[p.bodyPart] || p.bodyPart}</span>` : ''}
+          ${p.pump === true ? `<span class="photo-card-tag" style="background:rgba(232,255,71,0.15);color:var(--c1);">💪 Pump</span>` : p.pump === false ? `<span class="photo-card-tag" style="color:var(--muted2);">😴 No pump</span>` : ''}
         </div>
       </div>
-      <button class="photo-card-del" onclick="event.stopPropagation();deletePhoto(${p.id})">✕</button>
     </div>`;
   }).join('');
+}
+
+// ════════════════════════════════
+// EXERCISE DRAG TO REORDER
+// ════════════════════════════════
+let dragSrc = null;
+let touchDragEl = null;
+let touchClone = null;
+let touchOffsetY = 0;
+
+function initExerciseDrag() {
+  const list = document.getElementById('wl-exercises-list');
+  if (!list) return;
+
+  list.addEventListener('mousedown', e => {
+    const handle = e.target.closest('.wl-ex-drag');
+    if (!handle) return;
+    const row = handle.closest('.wl-ex-row');
+    if (!row) return;
+    row.draggable = true;
+    dragSrc = row;
+  });
+
+  list.addEventListener('dragstart', e => {
+    if (!dragSrc) return;
+    dragSrc.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.wl-ex-row');
+    if (!target || target === dragSrc) return;
+    list.querySelectorAll('.wl-ex-row').forEach(r => r.classList.remove('drag-over'));
+    target.classList.add('drag-over');
+  });
+
+  list.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.wl-ex-row');
+    if (!target || target === dragSrc) return;
+    const rows = [...list.querySelectorAll('.wl-ex-row')];
+    const srcIdx = rows.indexOf(dragSrc);
+    const tgtIdx = rows.indexOf(target);
+    if (srcIdx < tgtIdx) {
+      list.insertBefore(dragSrc, target.nextSibling);
+    } else {
+      list.insertBefore(dragSrc, target);
+    }
+    cleanup();
+  });
+
+  list.addEventListener('dragend', () => cleanup());
+
+  // ── TOUCH DRAG (mobile) ──
+  list.addEventListener('touchstart', e => {
+    const handle = e.target.closest('.wl-ex-drag');
+    if (!handle) return;
+    const row = handle.closest('.wl-ex-row');
+    if (!row) return;
+    e.preventDefault();
+    touchDragEl = row;
+    const touch = e.touches[0];
+    const rect = row.getBoundingClientRect();
+    touchOffsetY = touch.clientY - rect.top;
+    // Create floating clone
+    touchClone = row.cloneNode(true);
+    touchClone.style.cssText = `
+      position:fixed; left:${rect.left}px; top:${rect.top}px;
+      width:${rect.width}px; z-index:1000; opacity:0.9;
+      pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+      border-radius:10px; background:var(--surface); transition:none;
+    `;
+    document.body.appendChild(touchClone);
+    row.style.opacity = '0.3';
+  }, { passive: false });
+
+  list.addEventListener('touchmove', e => {
+    if (!touchDragEl || !touchClone) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const y = touch.clientY - touchOffsetY;
+    touchClone.style.top = y + 'px';
+    // Find which row we're hovering over
+    list.querySelectorAll('.wl-ex-row').forEach(r => r.classList.remove('drag-over'));
+    touchClone.style.display = 'none';
+    const elBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    touchClone.style.display = '';
+    const target = elBelow && elBelow.closest('.wl-ex-row');
+    if (target && target !== touchDragEl) target.classList.add('drag-over');
+  }, { passive: false });
+
+  list.addEventListener('touchend', e => {
+    if (!touchDragEl || !touchClone) return;
+    const touch = e.changedTouches[0];
+    touchClone.style.display = 'none';
+    const elBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    touchClone.style.display = '';
+    const target = elBelow && elBelow.closest('.wl-ex-row');
+    if (target && target !== touchDragEl) {
+      const rows = [...list.querySelectorAll('.wl-ex-row')];
+      const srcIdx = rows.indexOf(touchDragEl);
+      const tgtIdx = rows.indexOf(target);
+      if (srcIdx < tgtIdx) list.insertBefore(touchDragEl, target.nextSibling);
+      else list.insertBefore(touchDragEl, target);
+    }
+    touchCleanup();
+  });
+
+  function cleanup() {
+    if (dragSrc) {
+      dragSrc.classList.remove('dragging');
+      dragSrc.draggable = false;
+    }
+    list.querySelectorAll('.wl-ex-row').forEach(r => r.classList.remove('drag-over'));
+    dragSrc = null;
+  }
+
+  function touchCleanup() {
+    if (touchDragEl) touchDragEl.style.opacity = '';
+    if (touchClone) touchClone.remove();
+    list.querySelectorAll('.wl-ex-row').forEach(r => r.classList.remove('drag-over'));
+    touchDragEl = null;
+    touchClone = null;
+  }
 }
 
 // ════════════════════════════════
@@ -3141,7 +3483,7 @@ window.initAll = initAll;
 window.renderStreak = renderStreak;
 
 // Only call initAll directly if Firebase module hasn't taken over
-setTimeout(() => { if (!window.fbReady) initAll(); }, 800);
+setTimeout(() => { if (!window.fbReady) { initAll(); if(window.dismissLoader) dismissLoader(); } }, 800);
 </script>
 </body>
 </html>
