@@ -76,7 +76,8 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAyT3wRMvkB_J6DPDH234BLRYJI8n8s3hg",
@@ -89,55 +90,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const USER_DOC = 'users/ethan';
+const auth = getAuth(app);
+let currentUserId = null;
 
-// ── Save to Firestore ──
-window.fbSave = async function(key, data) {
-  try {
-    await setDoc(doc(db, USER_DOC + '/data', key), { value: JSON.stringify(data) }, { merge: true });
-  } catch(e) { console.warn('Firebase save failed:', e); }
-};
-
-// ── Load all data from Firestore on start ──
-window.fbLoadAll = async function() {
-  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed'];
-  const lsKeys = {
-    workoutLog: 'myRoutine_workoutLog',
-    personalBests: 'myRoutine_personalBests',
-    weightLog: 'myRoutine_weightLog',
-    missed: 'myRoutine_missed'
-  };
-  try {
-    await Promise.all(keys.map(async key => {
-      const snap = await getDoc(doc(db, USER_DOC + '/data', key));
-      if (snap.exists()) localStorage.setItem(lsKeys[key], snap.data().value);
-    }));
-    // Load photos index then each photo individually
-    const indexSnap = await getDoc(doc(db, USER_DOC + '/data', 'photosIndex'));
-    if (indexSnap.exists()) {
-      const index = JSON.parse(indexSnap.data().value);
-      const photos = await Promise.all(index.map(async meta => {
-        const photoSnap = await getDoc(doc(db, USER_DOC + '/data', 'photo_' + meta.id));
-        return photoSnap.exists() ? JSON.parse(photoSnap.data().value) : meta;
-      }));
-      localStorage.setItem('myRoutine_photos', JSON.stringify(photos));
-    }
-    console.log('Firebase data loaded');
-  } catch(e) { console.warn('Firebase load failed, using local data:', e); }
-  // Now init the app with fresh data
-  if (window.initAll) window.initAll();
-  // Re-render streak specifically since it needs session data
-  setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 100);
-  // Dismiss loader - minimum 2.5 seconds so it doesn't flash
-  setTimeout(dismissLoader, 2500);
-};
-
-// Show sync indicator
-window.fbReady = true;
-window.fbLoadAll();
-
-// Fallback — dismiss loader after 5s if Firebase is slow/offline
-setTimeout(dismissLoader, 5000);
+function getUserDoc() { return 'users/' + currentUserId; }
 
 function dismissLoader() {
   const loader = document.getElementById('app-loader');
@@ -145,6 +101,145 @@ function dismissLoader() {
   loader.style.opacity = '0';
   setTimeout(() => { loader.style.display = 'none'; }, 400);
 }
+
+// ── Save to Firestore ──
+window.fbSave = async function(key, data) {
+  if (!currentUserId) return;
+  try {
+    await setDoc(doc(db, getUserDoc() + '/data', key), { value: JSON.stringify(data) }, { merge: true });
+  } catch(e) { console.warn('Firebase save failed:', e); }
+};
+
+// ── Load all data ──
+window.fbLoadAll = async function() {
+  if (!currentUserId) return;
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'userRoutine'];
+  const lsKeys = {
+    workoutLog: 'myRoutine_workoutLog',
+    personalBests: 'myRoutine_personalBests',
+    weightLog: 'myRoutine_weightLog',
+    missed: 'myRoutine_missed',
+    userRoutine: 'myRoutine_userRoutine'
+  };
+  try {
+    await Promise.all(keys.map(async key => {
+      const snap = await getDoc(doc(db, getUserDoc() + '/data', key));
+      if (snap.exists()) localStorage.setItem(lsKeys[key], snap.data().value);
+    }));
+    const indexSnap = await getDoc(doc(db, getUserDoc() + '/data', 'photosIndex'));
+    if (indexSnap.exists()) {
+      const index = JSON.parse(indexSnap.data().value);
+      const photos = await Promise.all(index.map(async meta => {
+        const photoSnap = await getDoc(doc(db, getUserDoc() + '/data', 'photo_' + meta.id));
+        return photoSnap.exists() ? JSON.parse(photoSnap.data().value) : meta;
+      }));
+      localStorage.setItem('myRoutine_photos', JSON.stringify(photos));
+    }
+  } catch(e) { console.warn('Firebase load failed:', e); }
+  if (window.initAll) window.initAll();
+  setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 100);
+  setTimeout(dismissLoader, 2500);
+};
+
+// ── Sign in ──
+window.fbSignIn = async function(email, password) {
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch(e) {
+    errEl.textContent = 'Incorrect email or password.';
+    const btn = document.getElementById('login-btn');
+    btn.textContent = 'Sign in'; btn.disabled = false;
+  }
+};
+
+// ── Sign up ──
+window.fbSignUp = async function(email, password) {
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+  } catch(e) {
+    let msg = 'Could not create account.';
+    if (e.code === 'auth/email-already-in-use') msg = 'An account with this email already exists.';
+    if (e.code === 'auth/weak-password') msg = 'Password must be at least 6 characters.';
+    if (e.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
+    errEl.textContent = msg;
+    const btn = document.getElementById('signup-btn');
+    btn.textContent = 'Create account'; btn.disabled = false;
+  }
+};
+
+// ── Google sign in ──
+window.fbGoogleSignIn = async function() {
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    errEl.textContent = 'Google sign in failed. Try again.';
+  }
+};
+
+// ── Migrate old ethan data (one-time, only if new account is empty) ──
+async function migrateEthanData(uid, email) {
+  // Only migrate for Ethan's account
+  if (email !== 'ethaserm@gmail.com') return;
+  const OLD_USER = 'users/ethan';
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'photosIndex'];
+  try {
+    // Check if new account already has data
+    const checkSnap = await getDoc(doc(db, 'users/' + uid + '/data', 'workoutLog'));
+    if (checkSnap.exists()) return; // Already has data, skip migration
+
+    // Check if old ethan data exists
+    const oldSnap = await getDoc(doc(db, OLD_USER + '/data', 'workoutLog'));
+    if (!oldSnap.exists()) return; // No old data to migrate
+
+    console.log('Migrating ethan data to new account...');
+    // Copy all keys
+    await Promise.all(keys.map(async key => {
+      const snap = await getDoc(doc(db, OLD_USER + '/data', key));
+      if (snap.exists()) {
+        await setDoc(doc(db, 'users/' + uid + '/data', key), snap.data(), { merge: true });
+      }
+    }));
+    // Copy individual photos
+    const indexSnap = await getDoc(doc(db, OLD_USER + '/data', 'photosIndex'));
+    if (indexSnap.exists()) {
+      const index = JSON.parse(indexSnap.data().value);
+      await Promise.all(index.map(async meta => {
+        const photoSnap = await getDoc(doc(db, OLD_USER + '/data', 'photo_' + meta.id));
+        if (photoSnap.exists()) {
+          await setDoc(doc(db, 'users/' + uid + '/data', 'photo_' + meta.id), photoSnap.data(), { merge: true });
+        }
+      }));
+    }
+    console.log('Migration complete!');
+  } catch(e) { console.warn('Migration failed:', e); }
+}
+
+// ── Auth state ──
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUserId = user.uid;
+    window.fbReady = true;
+    document.getElementById('login-screen').style.display = 'none';
+    await migrateEthanData(user.uid, user.email);
+    window.fbLoadAll();
+  } else {
+    currentUserId = null;
+    window.fbReady = false;
+    dismissLoader();
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
+
+window.fbSignOut = async function() { await signOut(auth); };
+
+setTimeout(dismissLoader, 5000);
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -640,7 +735,49 @@ function dismissLoader() {
 </head>
 <body>
 
-<!-- LOADING SCREEN -->
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:#0e0e0e;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+  <svg viewBox="0 0 280 340" width="72" style="margin-bottom:28px;" xmlns="http://www.w3.org/2000/svg">
+    <rect width="280" height="340" rx="48" fill="#111"/>
+    <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="44" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="55" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="62" y="84" width="156" height="9" rx="4.5" fill="#2a2a2a"/>
+    <rect x="218" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
+    <rect x="225" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
+    <rect x="236" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+    <rect x="52" y="196" width="176" height="13" rx="5" fill="#1e1e1e"/>
+    <circle cx="82" cy="186" r="13" fill="none" stroke="white" stroke-width="3.5"/>
+    <line x1="95" y1="186" x2="178" y2="186" stroke="white" stroke-width="4"/>
+    <line x1="112" y1="186" x2="108" y2="88" stroke="white" stroke-width="3.5"/>
+    <line x1="152" y1="186" x2="156" y2="88" stroke="white" stroke-width="3.5"/>
+    <line x1="178" y1="186" x2="198" y2="212" stroke="white" stroke-width="3.5"/>
+    <line x1="198" y1="212" x2="192" y2="232" stroke="white" stroke-width="3.5"/>
+    <line x1="178" y1="186" x2="206" y2="208" stroke="white" stroke-width="3.5"/>
+    <line x1="206" y1="208" x2="204" y2="232" stroke="white" stroke-width="3.5"/>
+    <text x="140" y="282" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="3">MY</text>
+    <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
+  </svg>
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+    <input id="login-email" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;">
+    <input id="login-password" type="password" autocomplete="current-password" placeholder="Password" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="login-error" style="font-size:12px;color:#FF6B47;text-align:center;min-height:16px;"></div>
+    <button id="login-btn" onclick="doLogin()" style="background:#E8FF47;color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;width:100%;">Sign in</button>
+    <button id="signup-btn" onclick="doSignUp()" style="display:none;background:#E8FF47;color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;width:100%;">Create account</button>
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0;">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+      <span style="font-size:11px;color:var(--muted);letter-spacing:0.06em;">OR</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+    </div>
+    <button onclick="window.fbGoogleSignIn()" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:13px;border-radius:12px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <button onclick="toggleAuthMode()" id="auth-toggle" style="background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;text-align:center;padding:4px;">Don't have an account? <span style="color:#E8FF47;font-weight:600;">Sign up</span></button>
+  </div>
+</div>
+
+
 <div id="app-loader" style="
   position:fixed;inset:0;z-index:9999;
   background:#0e0e0e;
@@ -750,10 +887,12 @@ function dismissLoader() {
      SCHEDULE PAGE
 ═══════════════════════════════ -->
 <div class="page active" id="page-routine">
-<div class="page-header">
-  <p class="eyebrow">5-Day Split · No Tuesdays</p>
+<div class="page-header" style="position:relative;">
+  <p class="eyebrow">5-Day Split · No Tuesdays or Fridays</p>
   <h1>My <em>Weekly</em><br>Routine.</h1>
   <p class="subtitle">Tap any training day to view your session. Tap an exercise for form tips.</p>
+  <button onclick="if(confirm('Sign out?'))window.fbSignOut()" style="position:absolute;top:0;right:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Sign out</button>
+  <button onclick="openRoutineEditor()" style="position:absolute;top:0;right:72px;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.25);color:var(--c1);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Edit Routine</button>
 </div>
 
 <!-- STREAK CARD -->
@@ -768,7 +907,7 @@ function dismissLoader() {
 
 <div class="week-strip">
   <div class="week-day" id="wd-mon" onclick="showDay('mon')"><span class="wd-name">Mon</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest · Triceps · Shoulders</span></div>
-  <div class="week-day rest-day" id="wd-tue"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Hockey</span></div>
+  <div class="week-day rest-day" id="wd-tue"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
   <div class="week-day" id="wd-wed" onclick="showDay('wed')"><span class="wd-name">Wed</span><span class="wd-dot" style="background:var(--c2);"></span><span class="wd-label">Back · Biceps</span></div>
   <div class="week-day" id="wd-thu" onclick="showDay('thu')"><span class="wd-name">Thu</span><span class="wd-dot" style="background:var(--c3);"></span><span class="wd-label">Legs · Abs</span></div>
   <div class="week-day rest-day" id="wd-fri"><span class="wd-name">Fri</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
@@ -777,98 +916,6 @@ function dismissLoader() {
 </div>
 
 <div class="content">
-  <div class="heatmap-always">
-<div class="heatmap-card" id="heatmap-card">
-    <div class="heatmap-title" id="heatmap-title">Tap a day to see muscles worked</div>
-    <div class="heatmap-wrap">
-    <!-- FRONT body -->
-    <svg class="body-svg" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
-      <!-- head -->
-      <ellipse cx="60" cy="18" rx="13" ry="15" fill="#2a2a2a" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-      <!-- neck -->
-      <rect x="55" y="31" width="10" height="8" rx="2" fill="#2e3138"/>
-      <!-- chest -->
-      <path d="M35 42 Q60 38 85 42 L88 72 Q60 76 32 72 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-chest"/>
-      <!-- front delts / shoulders — sit beside chest, not over arms -->
-      <ellipse cx="28" cy="48" rx="9" ry="11" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-shoulder-l"/>
-      <ellipse cx="92" cy="48" rx="9" ry="11" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-shoulder-r"/>
-      <!-- biceps — sit below shoulders, no overlap -->
-      <rect x="19" y="62" width="11" height="28" rx="5" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-bicep-l"/>
-      <rect x="90" y="62" width="11" height="28" rx="5" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-bicep-r"/>
-      <!-- forearms -->
-      <rect x="16" y="90" width="9" height="24" rx="4" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-forearm-l"/>
-      <rect x="95" y="90" width="9" height="24" rx="4" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-forearm-r"/>
-      <!-- abs -->
-      <path d="M38 72 Q60 76 82 72 L80 110 Q60 114 40 110 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-abs"/>
-      <!-- obliques -->
-      <path d="M32 76 L38 72 L40 110 L30 106 Z" fill="#2e3138" id="f-oblique-l"/>
-      <path d="M88 76 L82 72 L80 110 L90 106 Z" fill="#2e3138" id="f-oblique-r"/>
-      <!-- hip / pelvis -->
-      <path d="M30 110 Q60 116 90 110 L88 128 Q60 132 32 128 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-      <!-- quads -->
-      <path d="M32 128 Q44 126 48 130 L46 180 Q38 184 30 178 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-quad-l"/>
-      <path d="M88 128 Q76 126 72 130 L74 180 Q82 184 90 178 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="f-quad-r"/>
-      <!-- knees -->
-      <ellipse cx="40" cy="185" rx="10" ry="8" fill="#252830"/>
-      <ellipse cx="80" cy="185" rx="10" ry="8" fill="#252830"/>
-      <!-- shins -->
-      <path d="M31 192 Q40 190 49 192 L47 240 Q40 244 33 240 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-      <path x="1" d="M71 192 Q80 190 89 192 L87 240 Q80 244 73 240 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
-      <!-- feet -->
-      <ellipse cx="40" cy="248" rx="12" ry="6" fill="#252830"/>
-      <ellipse cx="80" cy="248" rx="12" ry="6" fill="#252830"/>
-      <!-- triceps only visible on back view, not front -->
-      <!-- FRONT label -->
-      <text x="60" y="258" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="2">FRONT</text>
-    </svg>
-
-    <!-- BACK body -->
-    <svg class="body-svg" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
-      <!-- head -->
-      <ellipse cx="60" cy="18" rx="13" ry="15" fill="#2a2a2a" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-      <!-- neck -->
-      <rect x="55" y="31" width="10" height="8" rx="2" fill="#2e3138"/>
-      <!-- traps -->
-      <path d="M35 36 Q60 32 85 36 L88 52 Q60 48 32 52 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-trap"/>
-      <!-- rear delts -->
-      <ellipse cx="28" cy="50" rx="11" ry="12" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rear-delt-l"/>
-      <ellipse cx="92" cy="50" rx="11" ry="12" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rear-delt-r"/>
-      <!-- lats -->
-      <path d="M30 52 L36 48 L38 86 Q28 90 24 80 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lat-l"/>
-      <path d="M90 52 L84 48 L82 86 Q92 90 96 80 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lat-r"/>
-      <!-- mid back / rhomboids -->
-      <path d="M36 48 Q60 44 84 48 L82 86 Q60 90 38 86 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-rhomboid"/>
-      <!-- triceps -->
-      <rect x="16" y="60" width="12" height="32" rx="6" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-tricep-l"/>
-      <rect x="92" y="60" width="12" height="32" rx="6" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-tricep-r"/>
-      <!-- forearms back -->
-      <rect x="14" y="92" width="10" height="24" rx="5" fill="#2e3138" id="b-forearm-l"/>
-      <rect x="96" y="92" width="10" height="24" rx="5" fill="#2e3138" id="b-forearm-r"/>
-      <!-- lower back -->
-      <path d="M38 86 Q60 90 82 86 L80 112 Q60 116 40 112 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-lower-back"/>
-      <!-- glutes -->
-      <path d="M30 112 Q60 118 90 112 L88 140 Q60 146 32 140 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-glute"/>
-      <!-- hamstrings -->
-      <path d="M32 140 Q44 138 48 142 L46 186 Q38 190 30 184 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-ham-l"/>
-      <path d="M88 140 Q76 138 72 142 L74 186 Q82 190 90 184 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-ham-r"/>
-      <!-- calves -->
-      <path d="M31 194 Q40 192 49 194 L47 238 Q40 242 33 238 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-calf-l"/>
-      <path d="M71 194 Q80 192 89 194 L87 238 Q80 242 73 238 Z" fill="#2e3138" stroke="rgba(255,255,255,0.14)" stroke-width="1" id="b-calf-r"/>
-      <!-- knees back -->
-      <ellipse cx="40" cy="190" rx="10" ry="7" fill="#252830"/>
-      <ellipse cx="80" cy="190" rx="10" ry="7" fill="#252830"/>
-      <!-- feet -->
-      <ellipse cx="40" cy="248" rx="12" ry="6" fill="#252830"/>
-      <ellipse cx="80" cy="248" rx="12" ry="6" fill="#252830"/>
-      <text x="60" y="258" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="2">BACK</text>
-    </svg>
-    </div>
-    <div class="heatmap-legend">
-      <div class="heatmap-legend-item"><div class="heatmap-legend-dot" style="background:var(--c1);"></div>Primary</div>
-      <div class="heatmap-legend-item"><div class="heatmap-legend-dot" style="background:rgba(232,255,71,0.28);border:1px solid rgba(232,255,71,0.5);"></div>Secondary</div>
-    </div>
-  </div>
-  </div>
 
   <div class="day-panels-wrap">
   <div class="day-panel" id="panel-default">
@@ -901,7 +948,7 @@ function dismissLoader() {
 
   <!-- TUE — Hockey / Rest -->
   <div class="day-panel" id="panel-tue">
-    <div class="rest-card"><span class="rest-icon">🏒</span><div class="rest-text"><strong>Tuesday — Hockey.</strong> Active recovery day. Let the gym rest, hit the ice.</div></div>
+    <div class="rest-card"><span class="rest-icon">☽</span><div class="rest-text"><strong>Tuesday — Rest day.</strong> Full recovery. Prioritise sleep and protein intake.</div></div>
   </div>
 
   <!-- WED -->
@@ -1520,6 +1567,22 @@ function dismissLoader() {
 </div>
 
 <!-- REST TIMER TRIGGER (bottom-right FAB) -->
+<!-- ROUTINE EDITOR MODAL -->
+<div id="routine-editor-modal" style="display:none;position:fixed;inset:0;z-index:500;background:#0e0e0e;overflow-y:auto;padding:1rem 1rem calc(env(safe-area-inset-bottom,0px) + 80px);">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-top:0.5rem;">
+      <div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Customise</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.05em;color:var(--text);">MY ROUTINE</div>
+      </div>
+      <button onclick="closeRoutineEditor()" style="background:rgba(255,255,255,0.08);border:1px solid var(--border2);color:var(--text);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Choose what you do each day. Pick <strong style="color:var(--text);">Rest</strong> for off days, or select one or more muscle groups for training days.</p>
+    <div id="routine-days-list"></div>
+    <button onclick="saveRoutineEditor()" style="width:100%;background:var(--c1);color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;margin-top:1rem;">Save Routine</button>
+  </div>
+</div>
+
 <button class="rt-fab" id="rt-fab" onclick="rtOpen()" title="Start rest timer">⏱</button>
 
 
@@ -2282,12 +2345,10 @@ function startSession() {
   document.getElementById('wl-session-note').value = '';
 
   const today = getTodayTrainingDay();
-  const todayExercises = DAY_EXERCISES[today];
+  const todayExercises = getExercisesForDay(today);
 
-  if (todayExercises) {
-    todayExercises.forEach(ex => {
-      addExerciseRowWithData(ex.name, 1);
-    });
+  if (todayExercises.length > 0) {
+    todayExercises.forEach(ex => addExerciseRowWithData(ex.name, 1));
   } else {
     addExerciseRow();
   }
@@ -2658,6 +2719,155 @@ function savePB(id, name) {
 }
 
 // ════════════════════════════════
+// ROUTINE EDITOR
+// ════════════════════════════════
+const ROUTINE_KEY = 'myRoutine_userRoutine';
+const ROUTINE_TOPICS = {
+  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench press','Incline bench press','Low-to-High Flye'] },
+  back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Single Arm Dumbbell Row','Shrugs'] },
+  legs:      { label: 'Legs',      color: '#FF6B47', exercises: ['Weighted Squats','Weighted Lunges','Romanian Deadlift (RDL)','Goblet Squat','Single Dumbbell Squat'] },
+  shoulders: { label: 'Shoulders', color: '#C47BFF', exercises: ['Overhead Press','Lateral Raises','Front Raises','Reverse Raises (Rear Delt Flye)'] },
+  biceps:    { label: 'Biceps',    color: '#47FFAA', exercises: ['Bicep Curls','Cross Curls (Cross-body)','Single Arm Curls (Concentration)','Hammer Curls'] },
+  triceps:   { label: 'Triceps',   color: '#FF9F47', exercises: ['Tricep Pushdown','Overhead Tricep Extension','Tricep Dips'] },
+  abs:       { label: 'Abs',       color: '#FF47A0', exercises: ['Elbow-to-Knee Crunches','Leg Raises','V-Ups','Russian Twists'] },
+  forearms:  { label: 'Forearms',  color: '#A0FF47', exercises: ['Inward Finger Rolls','Single Wrist Curls','Finger Curls'] },
+};
+
+const DAY_NAMES_FULL = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+const ALL_DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+
+// Default routine (Ethan's) — used as fallback
+const DEFAULT_ROUTINE = {
+  mon: ['chest','triceps','shoulders'],
+  tue: [],
+  wed: ['back','biceps','forearms'],
+  thu: ['legs','abs'],
+  fri: [],
+  sat: ['chest','abs'],
+  sun: ['shoulders','biceps','forearms'],
+};
+
+let editorRoutine = {};
+
+function getRoutine() {
+  try {
+    const stored = localStorage.getItem(ROUTINE_KEY);
+    return stored ? JSON.parse(stored) : DEFAULT_ROUTINE;
+  } catch { return DEFAULT_ROUTINE; }
+}
+
+function saveRoutineToStorage(r) {
+  localStorage.setItem(ROUTINE_KEY, JSON.stringify(r));
+  if (window.fbSave) window.fbSave('userRoutine', r);
+}
+
+function openRoutineEditor() {
+  editorRoutine = JSON.parse(JSON.stringify(getRoutine()));
+  renderRoutineEditor();
+  document.getElementById('routine-editor-modal').style.display = 'block';
+}
+
+function closeRoutineEditor() {
+  document.getElementById('routine-editor-modal').style.display = 'none';
+}
+
+function renderRoutineEditor() {
+  const list = document.getElementById('routine-days-list');
+  list.innerHTML = ALL_DAYS.map(day => {
+    const topics = editorRoutine[day] || [];
+    const isRest = topics.length === 0;
+    const topicChips = Object.entries(ROUTINE_TOPICS).map(([key, t]) => {
+      const active = topics.includes(key);
+      return `<button onclick="toggleRoutineTopic('${day}','${key}')" style="
+        font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;
+        padding:5px 12px;border-radius:20px;cursor:pointer;
+        border:1px solid ${active ? t.color : 'rgba(255,255,255,0.12)'};
+        background:${active ? t.color + '22' : 'transparent'};
+        color:${active ? t.color : 'var(--muted)'};
+        transition:all 0.15s;
+      ">${t.label}</button>`;
+    }).join('');
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.05em;color:${isRest ? 'var(--muted)' : 'var(--text)'};">${DAY_NAMES_FULL[day]}</div>
+        <button onclick="toggleRoutineRest('${day}')" style="
+          font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;
+          padding:4px 10px;border-radius:6px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;
+          border:1px solid ${isRest ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'};
+          background:${isRest ? 'rgba(255,255,255,0.1)' : 'transparent'};
+          color:${isRest ? 'var(--text)' : 'var(--muted)'};
+        ">Rest</button>
+      </div>
+      ${isRest ? '<div style="font-size:11px;color:var(--muted2);">Rest day — no exercises loaded</div>' : `<div style="display:flex;flex-wrap:wrap;gap:6px;">${topicChips}</div>`}
+    </div>`;
+  }).join('');
+}
+
+function toggleRoutineTopic(day, topic) {
+  if (!editorRoutine[day]) editorRoutine[day] = [];
+  const idx = editorRoutine[day].indexOf(topic);
+  if (idx > -1) editorRoutine[day].splice(idx, 1);
+  else editorRoutine[day].push(topic);
+  renderRoutineEditor();
+}
+
+function toggleRoutineRest(day) {
+  if (!editorRoutine[day] || editorRoutine[day].length === 0) {
+    // Currently rest — give it a default topic
+    editorRoutine[day] = ['chest'];
+  } else {
+    // Make it rest
+    editorRoutine[day] = [];
+  }
+  renderRoutineEditor();
+}
+
+function saveRoutineEditor() {
+  saveRoutineToStorage(editorRoutine);
+  closeRoutineEditor();
+  // Rebuild week strip labels
+  updateWeekStripFromRoutine();
+}
+
+function getExercisesForDay(day) {
+  const routine = getRoutine();
+  const topics = routine[day] || [];
+  const exercises = [];
+  topics.forEach(topic => {
+    const t = ROUTINE_TOPICS[topic];
+    if (t) t.exercises.forEach(name => {
+      if (!exercises.find(e => e.name === name)) {
+        exercises.push({ name, sets: 1, reps: '10' });
+      }
+    });
+  });
+  return exercises;
+}
+
+function updateWeekStripFromRoutine() {
+  const routine = getRoutine();
+  ALL_DAYS.forEach(day => {
+    const topics = routine[day] || [];
+    const wdEl = document.getElementById('wd-' + day);
+    if (!wdEl) return;
+    const labelEl = wdEl.querySelector('.wd-label');
+    const dotEl = wdEl.querySelector('.wd-dot');
+    if (topics.length === 0) {
+      wdEl.classList.add('rest-day');
+      wdEl.onclick = null;
+      if (labelEl) labelEl.textContent = 'Rest';
+      if (dotEl) dotEl.style.background = '#2a2a2a';
+    } else {
+      wdEl.classList.remove('rest-day');
+      wdEl.onclick = () => showDay(day);
+      if (labelEl) labelEl.textContent = topics.map(t => ROUTINE_TOPICS[t]?.label || t).join(' · ');
+      if (dotEl) dotEl.style.background = ROUTINE_TOPICS[topics[0]]?.color || 'var(--c1)';
+    }
+  });
+}
+
+// ════════════════════════════════
 // REST TIMER
 // ════════════════════════════════
 let rtSeconds = 90;
@@ -2922,7 +3132,7 @@ function renderWeeklyOverview() {
     // Sessions this week
     const sessions = log.filter(s => s.date >= weekStartStr && s.date <= weekEndStr);
 
-    // Build day data
+    // Build day data for training days
     const days = TRAINING_DAY_ORDER.map(dayKey => {
       const dayOffset = { mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6 };
       const dayDate = new Date(weekStart);
@@ -2938,10 +3148,14 @@ function renderWeeklyOverview() {
       return { dayKey, dayDateStr, isFuture, session, missedEntry };
     });
 
-    const doneCount = days.filter(d => d.session).length;
+    // Find any sessions on non-training days (Tue/Fri/any extra)
+    const trainingDates = days.map(d => d.dayDateStr);
+    const extraSessions = sessions.filter(s => !trainingDates.includes(s.date));
+
+    const doneCount = days.filter(d => d.session).length + extraSessions.length;
     const missedCount = days.filter(d => !d.session && !d.isFuture && d.missedEntry).length;
 
-    weeks.push({ weekStart, weekStartStr, weekEndStr, days, doneCount, missedCount });
+    weeks.push({ weekStart, weekStartStr, weekEndStr, days, doneCount, missedCount, extraSessions });
   }
 
   // Check if any data exists
@@ -2964,7 +3178,6 @@ function renderWeeklyOverview() {
       if (d.isFuture) {
         dot = '<div class="wo-day-dot future"></div>';
       } else if (d.session) {
-        const exNames = d.session.exercises.map(e => e.name.split(' ')[0]).join(', ');
         dot = '<div class="wo-day-dot done">✓</div>';
         note = `<div class="wo-day-note" style="color:var(--c5);">${d.session.exercises.length} ex</div>`;
       } else if (d.missedEntry) {
@@ -2975,10 +3188,19 @@ function renderWeeklyOverview() {
       }
       return `<div class="wo-day-cell">
         <div class="wo-day-name">${TRAINING_DAY_NAMES[d.dayKey]}</div>
-        ${dot}
-        ${note}
+        ${dot}${note}
       </div>`;
     }).join('');
+
+    // Extra column for non-training day sessions
+    let extraHTML = '';
+    if (week.extraSessions.length > 0) {
+      const exDot = '<div class="wo-day-dot done" style="background:rgba(255,159,71,0.15);color:#FF9F47;">✓</div>';
+      const exNote = `<div class="wo-day-note" style="color:#FF9F47;">${week.extraSessions.length} extra</div>`;
+      extraHTML = `<div class="wo-day-cell"><div class="wo-day-name" style="color:#FF9F47;">Extra</div>${exDot}${exNote}</div>`;
+    } else {
+      extraHTML = `<div class="wo-day-cell"><div class="wo-day-name" style="color:var(--muted2);">Extra</div><div class="wo-day-dot empty"></div></div>`;
+    }
 
     const statText = week.doneCount > 0 || week.missedCount > 0
       ? `<span>${week.doneCount}</span>/${week.days.length} sessions`
@@ -2989,7 +3211,7 @@ function renderWeeklyOverview() {
         <div class="wo-week-label">${label}</div>
         <div class="wo-week-stat">${statText}</div>
       </div>
-      <div class="wo-days-grid">${dayHTML}</div>
+      <div class="wo-days-grid" style="grid-template-columns:repeat(6,1fr);">${dayHTML}${extraHTML}</div>
     </div>`;
   }).join('');
 }
@@ -3465,6 +3687,38 @@ function clearMissed(day) {
   injectMissedSection(day);
 }
 
+let authMode = 'login';
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  const isSignup = authMode === 'signup';
+  document.getElementById('login-btn').style.display = isSignup ? 'none' : 'block';
+  document.getElementById('signup-btn').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('auth-toggle').innerHTML = isSignup
+    ? 'Already have an account? <span style="color:#E8FF47;font-weight:600;">Sign in</span>'
+    : 'Don\'t have an account? <span style="color:#E8FF47;font-weight:600;">Sign up</span>';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { document.getElementById('login-error').textContent = 'Please enter email and password.'; return; }
+  const btn = document.getElementById('login-btn');
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  window.fbSignIn(email, password);
+}
+
+function doSignUp() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { document.getElementById('login-error').textContent = 'Please enter email and password.'; return; }
+  if (password.length < 6) { document.getElementById('login-error').textContent = 'Password must be at least 6 characters.'; return; }
+  const btn = document.getElementById('signup-btn');
+  btn.textContent = 'Creating account...'; btn.disabled = true;
+  window.fbSignUp(email, password);
+}
+
 // ── INIT ALL ──
 function initAll() {
   try { buildGuide(); } catch(e) { console.error('buildGuide error:', e); }
@@ -3472,6 +3726,7 @@ function initAll() {
   try { renderWL(); } catch(e) { console.error('renderWL error:', e); }
   try { renderPBs(); } catch(e) { console.error('renderPBs error:', e); }
   try { renderStreak(); } catch(e) { console.error('renderStreak error:', e); }
+  try { updateWeekStripFromRoutine(); } catch(e) { console.error('updateWeekStrip error:', e); }
   try {
     const days = ['sun','mon','tue','wed','thu','fri','sat'];
     const today = days[new Date().getDay()];
