@@ -1013,6 +1013,7 @@ setTimeout(dismissLoader, 5000);
         </div></div>
         <div class="section"><div class="section-label"><span class="bar bar5"></span>Biceps</div><div class="ex-list">
           <div class="ex-row" onclick="openModal('bicep-curls')"><span class="ex-name">Bicep curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
+          <div class="ex-row" onclick="openModal('preacher-curls')"><span class="ex-name">Preacher curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('hammer-curls')"><span class="ex-name">Hammer curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('cross-curls')"><span class="ex-name">Cross curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
         </div></div>
@@ -1847,6 +1848,37 @@ const EXERCISES = {
     cues: ['Don\'t go above 45° — it becomes a shoulder press, not a chest exercise', 'Touch your upper chest, not your neck', 'Think "elbows slightly in front of the bar" at the bottom'],
     mistakes: ['Bench angle too steep — shifts all load to shoulders', 'Bar drifting down to the middle or lower chest']
   },
+  'bench-press-db': {
+    name: 'Bench Press (Dumbbell)', cat: 'chest', dot: 'var(--c1)', muscle: 'Chest · Triceps · Front Delts', search: 'dumbbell bench press',
+    steps: [
+      ['Setup', 'Lie flat on the bench holding a dumbbell in each hand at chest height, palms facing your feet.'],
+      ['Lower', 'Lower the dumbbells in a controlled arc until your elbows are just below the level of the bench. Full stretch at the bottom.'],
+      ['Press', 'Drive the dumbbells back up and slightly together at the top. Squeeze your chest hard at the top — the dumbbells can touch but don\'t clang them.']
+    ],
+    cues: ['Greater range of motion than barbell — use it, go deep on the stretch', 'Keep your wrists stacked over your elbows throughout', 'Control each arm independently — don\'t let one drift'],
+    mistakes: ['Letting the dumbbells drift too wide — flares the elbows and stresses the shoulder', 'Rushing the descent — the stretch is where a lot of the benefit is']
+  },
+  'incline-bench-db': {
+    name: 'Incline Bench Press (Dumbbell)', cat: 'chest', dot: 'var(--c1)', muscle: 'Upper Chest · Front Delts · Triceps', search: 'incline dumbbell press',
+    steps: [
+      ['Setup', 'Set bench to 30–45°. Hold a dumbbell in each hand at shoulder height, palms facing forward.'],
+      ['Lower', 'Lower the dumbbells with control until you feel a stretch in the upper chest. Elbows at roughly 45–75° to your torso.'],
+      ['Press', 'Drive the dumbbells up and slightly together. Squeeze the upper chest at the top.']
+    ],
+    cues: ['Same angle rules as barbell incline — don\'t go above 45°', 'The dumbbells allow a deeper stretch than a barbell version', 'Keep both dumbbells moving at the same speed — don\'t let one lag'],
+    mistakes: ['Going too steep — becomes a shoulder press', 'Letting the wrists bend back under the load — keep them stacked']
+  },
+  'deadlift-db': {
+    name: 'Deadlift (Dumbbell)', cat: 'back', dot: 'var(--c2)', muscle: 'Full Back · Hamstrings · Glutes', search: 'dumbbell deadlift',
+    steps: [
+      ['Setup', 'Stand with feet hip-width apart, a dumbbell in each hand in front of your thighs, palms facing you.'],
+      ['Hinge', 'Push your hips back and hinge forward, letting the dumbbells trail down your legs. Keep your back flat and chest up.'],
+      ['Pull', 'Drive through your heels and extend your hips to stand tall. Squeeze your glutes at the top.'],
+      ['Lower', 'Hinge at the hips to lower the dumbbells back down with control. Don\'t let them swing forward.']
+    ],
+    cues: ['Same hip-hinge pattern as barbell — push the hips back, not the knees forward', 'Dumbbells stay close to your legs throughout — don\'t let them drift', 'Neutral spine throughout — brace before each rep'],
+    mistakes: ['Rounding the lower back', 'Squatting instead of hinging — this is a hinge movement, not a squat', 'Letting the dumbbells swing forward away from the body']
+  },
   'flye': {
     name: 'Low-to-High Flye', cat: 'chest', dot: 'var(--c1)', muscle: 'Chest · Front Delt', search: 'cable chest fly low to high',
     steps: [
@@ -2048,6 +2080,47 @@ const EXERCISES = {
     ],
     cues: ['Neutral grip throughout — this targets the brachialis under the bicep, which pushes the bicep up', 'Same no-swinging rule as regular curls'],
     mistakes: ['Rotating the wrist — just becomes a regular curl']
+  },
+  'calf-raises': {
+    name: 'Calf Raises', cat: 'legs', dot: 'var(--c3)', muscle: 'Calves · Soleus', search: 'calf raises dumbbell',
+    steps: [
+      ['Setup', 'Stand with feet hip-width apart, holding dumbbells at your sides or a barbell across your upper back. You can stand on the edge of a step for extra range.'],
+      ['Rise', 'Push through the balls of your feet and rise up as high as possible onto your toes. Pause at the top for 1 second.'],
+      ['Lower', 'Slowly lower your heels back down. If on a step, let your heels drop below the step level for a full stretch.']
+    ],
+    cues: ['Slow and controlled — calves respond better to time under tension than heavy and fast', 'Full range of motion — all the way up and all the way down', 'Pause at the top to eliminate momentum'],
+    mistakes: ['Bouncing — using momentum instead of the muscle', 'Partial reps — not getting the full stretch at the bottom']
+  },
+  'push-up': {
+    name: 'Push Up', cat: 'chest', dot: 'var(--c1)', muscle: 'Chest · Triceps · Front Delts', search: 'push up form',
+    steps: [
+      ['Setup', 'Start in a high plank with hands slightly wider than shoulder-width. Body in a straight line from head to heels — don\'t let your hips sag or pike up.'],
+      ['Lower', 'Bend your elbows and lower your chest toward the floor. Elbows at roughly 45° to your torso — not flared out wide.'],
+      ['Press', 'Push the floor away and return to the start position. Squeeze your chest at the top. Keep your core tight throughout.']
+    ],
+    cues: ['Think of it as a moving plank — your whole body moves as one unit', 'Elbows at 45°, not 90° — protects the shoulder joint', 'Full range of motion — chest nearly touches the floor'],
+    mistakes: ['Sagging hips — your core is too weak or you\'re fatigued, drop to your knees', 'Flaring elbows out wide — huge shoulder stress', 'Partial reps — not going all the way down']
+  },
+  'pull-up': {
+    name: 'Pull Up', cat: 'back', dot: 'var(--c2)', muscle: 'Lats · Biceps · Rear Delt · Core', search: 'pull up form',
+    steps: [
+      ['Grip', 'Hang from a bar with an overhand grip (palms facing away), slightly wider than shoulder-width. Arms fully extended.'],
+      ['Initiate', 'Before pulling, depress your shoulder blades — think "put your shoulders in your back pockets". This activates your lats from the start.'],
+      ['Pull', 'Drive your elbows down and back toward your hips. Your chin should clear the bar at the top.'],
+      ['Lower', 'Slowly lower yourself back to a dead hang. Don\'t drop fast — the eccentric is where a lot of the strength is built.']
+    ],
+    cues: ['"Elbows to hips" — keeps the lats engaged rather than biceps taking over', 'Initiate with the shoulder blades before the arms', 'Dead hang at the bottom — full range every rep'],
+    mistakes: ['Kipping or swinging — use strict form for actual strength gains', 'Not going to a full dead hang — limits range and growth', 'Shrugging the shoulders up — keep them packed down']
+  },
+  'preacher-curls': {
+    name: 'Preacher Curls', cat: 'arms', dot: 'var(--c5)', muscle: 'Biceps · Long Head', search: 'preacher curl bicep',
+    steps: [
+      ['Setup', 'Sit at a preacher bench and rest your upper arms flat on the pad, angled away from your body. Hold a barbell or EZ bar with an underhand grip.'],
+      ['Curl', 'Curl the weight up toward your shoulders, keeping your upper arms pressed firmly against the pad throughout.'],
+      ['Lower', 'Slowly lower the weight back to near full extension — don\'t lock out completely to keep tension on the bicep.']
+    ],
+    cues: ['The pad eliminates any body swing — pure bicep isolation', 'Control the negative (lowering) — this is where a lot of the growth stimulus comes from', 'Don\'t fully lock out at the bottom — keep a slight bend to maintain tension'],
+    mistakes: ['Letting your upper arms lift off the pad — defeats the purpose', 'Going too heavy and losing form — lighter and stricter is better here']
   },
   'cross-curls': {
     name: 'Cross Curls (Cross-body)', cat: 'arms', dot: 'var(--c5)', muscle: 'Biceps · Brachialis', search: 'cross body curl',
@@ -2283,6 +2356,7 @@ const DAY_EXERCISES = {
     { name: 'Single Arm Dumbbell Row',  sets: 3, reps: '10' },
     { name: 'Shrugs',                   sets: 3, reps: '10' },
     { name: 'Bicep Curls',              sets: 3, reps: '10' },
+    { name: 'Preacher Curls',           sets: 3, reps: '10' },
     { name: 'Cross Curls (Cross-body)', sets: 3, reps: '10' },
     { name: 'Single Arm Curls (Concentration)', sets: 3, reps: '10' },
     { name: 'Hammer Curls',             sets: 3, reps: '10' },
@@ -2316,6 +2390,7 @@ const DAY_EXERCISES = {
     { name: 'Front Raises',             sets: 4, reps: '8'  },
     { name: 'Reverse Raises (Rear Delt Flye)', sets: 4, reps: '8' },
     { name: 'Bicep Curls',              sets: 3, reps: '10' },
+    { name: 'Preacher Curls',           sets: 3, reps: '10' },
     { name: 'Hammer Curls',             sets: 3, reps: '10' },
     { name: 'Cross Curls (Cross-body)', sets: 3, reps: '10' },
     { name: 'Inward Finger Rolls',      sets: 3, reps: '15' },
@@ -2937,11 +3012,11 @@ function formatDuration(secs) {
 // ════════════════════════════════
 const ROUTINE_KEY = 'myRoutine_userRoutine';
 const ROUTINE_TOPICS = {
-  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench press','Incline bench press','Low-to-High Flye'] },
-  back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Single Arm Dumbbell Row','Shrugs'] },
-  legs:      { label: 'Legs',      color: '#FF6B47', exercises: ['Weighted Squats','Weighted Lunges','Romanian Deadlift (RDL)','Goblet Squat','Single Dumbbell Squat'] },
+  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench press','Bench Press (Dumbbell)','Incline bench press','Incline Bench Press (Dumbbell)','Low-to-High Flye','Push Up'] },
+  back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Deadlift (Dumbbell)','Pull Up','Single Arm Dumbbell Row','Shrugs'] },
+  legs:      { label: 'Legs',      color: '#FF6B47', exercises: ['Weighted Squats','Weighted Lunges','Romanian Deadlift (RDL)','Goblet Squat','Single Dumbbell Squat','Calf Raises'] },
   shoulders: { label: 'Shoulders', color: '#C47BFF', exercises: ['Overhead Press','Lateral Raises','Front Raises','Reverse Raises (Rear Delt Flye)'] },
-  biceps:    { label: 'Biceps',    color: '#47FFAA', exercises: ['Bicep Curls','Cross Curls (Cross-body)','Single Arm Curls (Concentration)','Hammer Curls'] },
+  biceps:    { label: 'Biceps',    color: '#47FFAA', exercises: ['Bicep Curls','Preacher Curls','Cross Curls (Cross-body)','Single Arm Curls (Concentration)','Hammer Curls'] },
   triceps:   { label: 'Triceps',   color: '#FF9F47', exercises: ['Tricep Pushdown','Overhead Tricep Extension','Tricep Dips'] },
   abs:       { label: 'Abs',       color: '#FF47A0', exercises: ['Elbow-to-Knee Crunches','Leg Raises','V-Ups','Russian Twists'] },
   forearms:  { label: 'Forearms',  color: '#A0FF47', exercises: ['Inward Finger Rolls','Single Wrist Curls','Finger Curls'] },
