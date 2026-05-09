@@ -1248,8 +1248,9 @@ setTimeout(dismissLoader, 5000);
   <div class="wl-card" id="wl-form-card">
     <div class="wl-card-title-row">
       <div class="wl-card-title" id="wl-form-title">Start a session</div>
-      <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:flex;align-items:center;gap:6px;">
         <span class="session-timer-display" id="session-timer-display" style="display:none;">0:00</span>
+        <button id="timer-pause-btn" onclick="pauseResumeTimer()" style="display:none;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.25);color:var(--c1);width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;">⏸</button>
         <button class="wl-start-btn" id="wl-start-btn" onclick="startSession()">+ New session</button>
       </div>
     </div>
@@ -2344,8 +2345,8 @@ let wlExCounter = 0;
 // Map of training day -> exercises in order (matching the routine)
 const DAY_EXERCISES = {
   mon: [
-    { name: 'Bench press',              sets: 4, reps: '12' },
-    { name: 'Incline bench press',      sets: 4, reps: '12' },
+    { name: 'Bench Press',              sets: 4, reps: '12' },
+    { name: 'Incline Bench Press',      sets: 4, reps: '12' },
     { name: 'Low-to-High Flye',         sets: 4, reps: '12' },
     { name: 'Tricep Pushdown',          sets: 3, reps: '10' },
     { name: 'Overhead Tricep Extension',sets: 3, reps: '10' },
@@ -2379,8 +2380,8 @@ const DAY_EXERCISES = {
     { name: 'Russian Twists',           sets: 3, reps: '10' },
   ],
   sat: [
-    { name: 'Bench press',              sets: 4, reps: '8'  },
-    { name: 'Incline bench press',      sets: 3, reps: '10' },
+    { name: 'Bench Press',              sets: 4, reps: '8'  },
+    { name: 'Incline Bench Press',      sets: 3, reps: '10' },
     { name: 'Low-to-High Flye',         sets: 3, reps: '12' },
     { name: 'Elbow-to-Knee Crunches',   sets: 3, reps: '10' },
     { name: 'Leg Raises',               sets: 3, reps: '10' },
@@ -2413,7 +2414,9 @@ function startSession() {
   document.getElementById('wl-session-editor').style.display = 'block';
   document.getElementById('wl-start-btn').style.display = 'none';
   const timerEl = document.getElementById('session-timer-display');
+  const pauseBtn = document.getElementById('timer-pause-btn');
   if (timerEl) { timerEl.style.display = 'block'; timerEl.textContent = '0:00'; }
+  if (pauseBtn) pauseBtn.style.display = 'block';
   document.getElementById('wl-session-date').value = toLocalDateStr(new Date());
   document.getElementById('wl-exercises-list').innerHTML = '';
   document.getElementById('wl-session-note').value = '';
@@ -2435,10 +2438,22 @@ function cancelSession() {
   wlEditingId = null;
   stopSessionTimer();
   const timerEl = document.getElementById('session-timer-display');
+  const pauseBtn = document.getElementById('timer-pause-btn');
   if (timerEl) timerEl.style.display = 'none';
+  if (pauseBtn) pauseBtn.style.display = 'none';
   document.getElementById('wl-session-editor').style.display = 'none';
   document.getElementById('wl-start-btn').style.display = '';
   document.getElementById('wl-form-title').textContent = 'Start a session';
+}
+
+const BARBELL_DUMBBELL_EXERCISES = ['Bench Press', 'Incline Bench Press', 'Deadlift'];
+
+function getBarbellVariant(name) {
+  return name; // barbell = original name
+}
+
+function getDumbbellVariant(name) {
+  return name + ' (Dumbbell)';
 }
 
 function buildExerciseOptions(selected) {
@@ -2978,20 +2993,45 @@ function saveRestNote(day) {
 let sessionTimerInterval = null;
 let sessionTimerStart = null;
 let sessionTimerSeconds = 0;
+let sessionTimerPaused = false;
+let sessionTimerPausedAt = 0;
 
 function startSessionTimer() {
   sessionTimerStart = Date.now();
   sessionTimerSeconds = 0;
+  sessionTimerPaused = false;
+  sessionTimerPausedAt = 0;
   clearInterval(sessionTimerInterval);
   sessionTimerInterval = setInterval(() => {
-    sessionTimerSeconds = Math.floor((Date.now() - sessionTimerStart) / 1000);
-    const el = document.getElementById('session-timer-display');
-    if (el) el.textContent = formatSessionTime(sessionTimerSeconds);
+    if (!sessionTimerPaused) {
+      sessionTimerSeconds = Math.floor((Date.now() - sessionTimerStart) / 1000);
+      const el = document.getElementById('session-timer-display');
+      if (el) el.textContent = formatSessionTime(sessionTimerSeconds);
+    }
   }, 1000);
+  updateTimerPauseBtn();
+}
+
+function pauseResumeTimer() {
+  if (sessionTimerPaused) {
+    // Resume — shift start time forward by how long we were paused
+    sessionTimerStart += (Date.now() - sessionTimerPausedAt);
+    sessionTimerPaused = false;
+  } else {
+    sessionTimerPausedAt = Date.now();
+    sessionTimerPaused = true;
+  }
+  updateTimerPauseBtn();
+}
+
+function updateTimerPauseBtn() {
+  const btn = document.getElementById('timer-pause-btn');
+  if (btn) btn.textContent = sessionTimerPaused ? '▶' : '⏸';
 }
 
 function stopSessionTimer() {
   clearInterval(sessionTimerInterval);
+  sessionTimerPaused = false;
   const elapsed = sessionTimerSeconds;
   sessionTimerSeconds = 0;
   return elapsed;
@@ -3015,7 +3055,7 @@ function formatDuration(secs) {
 // ════════════════════════════════
 const ROUTINE_KEY = 'myRoutine_userRoutine';
 const ROUTINE_TOPICS = {
-  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench press','Bench Press (Dumbbell)','Incline bench press','Incline Bench Press (Dumbbell)','Low-to-High Flye','Push Up'] },
+  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench Press','Bench Press (Dumbbell)','Incline Bench Press','Incline Bench Press (Dumbbell)','Low-to-High Flye','Push Up'] },
   back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Deadlift (Dumbbell)','Pull Up','Single Arm Dumbbell Row','Shrugs'] },
   legs:      { label: 'Legs',      color: '#FF6B47', exercises: ['Weighted Squats','Weighted Lunges','Romanian Deadlift (RDL)','Goblet Squat','Single Dumbbell Squat','Calf Raises'] },
   shoulders: { label: 'Shoulders', color: '#C47BFF', exercises: ['Overhead Press','Lateral Raises','Front Raises','Reverse Raises (Rear Delt Flye)'] },
