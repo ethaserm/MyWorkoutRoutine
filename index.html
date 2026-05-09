@@ -113,13 +113,14 @@ window.fbSave = async function(key, data) {
 // ── Load all data ──
 window.fbLoadAll = async function() {
   if (!currentUserId) return;
-  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'userRoutine'];
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'userRoutine', 'restNotes'];
   const lsKeys = {
     workoutLog: 'myRoutine_workoutLog',
     personalBests: 'myRoutine_personalBests',
     weightLog: 'myRoutine_weightLog',
     missed: 'myRoutine_missed',
-    userRoutine: 'myRoutine_userRoutine'
+    userRoutine: 'myRoutine_userRoutine',
+    restNotes: 'myRoutine_restNotes'
   };
   try {
     await Promise.all(keys.map(async key => {
@@ -137,7 +138,7 @@ window.fbLoadAll = async function() {
     }
   } catch(e) { console.warn('Firebase load failed:', e); }
   if (window.initAll) window.initAll();
-  setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 100);
+  setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 500);
   setTimeout(dismissLoader, 2500);
 };
 
@@ -183,51 +184,12 @@ window.fbGoogleSignIn = async function() {
   }
 };
 
-// ── Migrate old ethan data (one-time, only if new account is empty) ──
-async function migrateEthanData(uid, email) {
-  // Only migrate for Ethan's account
-  if (email !== 'ethaserm@gmail.com') return;
-  const OLD_USER = 'users/ethan';
-  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'photosIndex'];
-  try {
-    // Check if new account already has data
-    const checkSnap = await getDoc(doc(db, 'users/' + uid + '/data', 'workoutLog'));
-    if (checkSnap.exists()) return; // Already has data, skip migration
-
-    // Check if old ethan data exists
-    const oldSnap = await getDoc(doc(db, OLD_USER + '/data', 'workoutLog'));
-    if (!oldSnap.exists()) return; // No old data to migrate
-
-    console.log('Migrating ethan data to new account...');
-    // Copy all keys
-    await Promise.all(keys.map(async key => {
-      const snap = await getDoc(doc(db, OLD_USER + '/data', key));
-      if (snap.exists()) {
-        await setDoc(doc(db, 'users/' + uid + '/data', key), snap.data(), { merge: true });
-      }
-    }));
-    // Copy individual photos
-    const indexSnap = await getDoc(doc(db, OLD_USER + '/data', 'photosIndex'));
-    if (indexSnap.exists()) {
-      const index = JSON.parse(indexSnap.data().value);
-      await Promise.all(index.map(async meta => {
-        const photoSnap = await getDoc(doc(db, OLD_USER + '/data', 'photo_' + meta.id));
-        if (photoSnap.exists()) {
-          await setDoc(doc(db, 'users/' + uid + '/data', 'photo_' + meta.id), photoSnap.data(), { merge: true });
-        }
-      }));
-    }
-    console.log('Migration complete!');
-  } catch(e) { console.warn('Migration failed:', e); }
-}
-
 // ── Auth state ──
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUserId = user.uid;
     window.fbReady = true;
     document.getElementById('login-screen').style.display = 'none';
-    await migrateEthanData(user.uid, user.email);
     window.fbLoadAll();
   } else {
     currentUserId = null;
@@ -668,9 +630,19 @@ setTimeout(dismissLoader, 5000);
   .pb-wrap { max-width: 760px; margin: 0 auto; }
   .pb-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
   .pb-grid { display: flex; flex-direction: column; gap: 8px; }
-  .pb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.15s; }
+  .pb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.15s; cursor: pointer; }
   .pb-card:hover { border-color: var(--border2); }
   .pb-card.hidden { display: none; }
+  /* Progress chart modal */
+  .progress-modal { display:none; position:fixed; inset:0; z-index:500; background:#0e0e0e; overflow-y:auto; padding:1rem; }
+  .progress-modal.open { display:block; }
+  .progress-chart-wrap { max-width:760px; margin:0 auto; }
+  /* Rest day notes */
+  .rest-note-section { margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
+  .rest-note-input { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:10px 12px; outline:none; resize:none; }
+  .rest-note-input:focus { border-color:rgba(255,255,255,0.25); }
+  /* Session timer */
+  .session-timer-display { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--c1); letter-spacing:0.05em; }
   .pb-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .pb-info { flex: 1; }
   .pb-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
@@ -1272,7 +1244,10 @@ setTimeout(dismissLoader, 5000);
   <div class="wl-card" id="wl-form-card">
     <div class="wl-card-title-row">
       <div class="wl-card-title" id="wl-form-title">Start a session</div>
-      <button class="wl-start-btn" id="wl-start-btn" onclick="startSession()">+ New session</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="session-timer-display" id="session-timer-display" style="display:none;">0:00</span>
+        <button class="wl-start-btn" id="wl-start-btn" onclick="startSession()">+ New session</button>
+      </div>
     </div>
     <div id="wl-session-editor" style="display:none;">
       <div class="wl-date-row">
@@ -1580,6 +1555,22 @@ setTimeout(dismissLoader, 5000);
     <p style="font-size:12px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;">Choose what you do each day. Pick <strong style="color:var(--text);">Rest</strong> for off days, or select one or more muscle groups for training days.</p>
     <div id="routine-days-list"></div>
     <button onclick="saveRoutineEditor()" style="width:100%;background:var(--c1);color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;margin-top:1rem;">Save Routine</button>
+  </div>
+</div>
+
+<!-- PROGRESS CHART MODAL -->
+<div id="progress-modal" class="progress-modal">
+  <div class="progress-chart-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-top:0.5rem;">
+      <div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Progress</div>
+        <div id="progress-modal-title" style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);letter-spacing:0.05em;"></div>
+      </div>
+      <button onclick="closeProgressModal()" style="background:rgba(255,255,255,0.08);border:1px solid var(--border2);color:var(--text);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="progress-modal-stats" style="display:flex;gap:12px;margin-bottom:1rem;"></div>
+    <canvas id="progress-chart-canvas" style="width:100%;border-radius:12px;"></canvas>
+    <div id="progress-modal-empty" style="display:none;text-align:center;padding:3rem;color:var(--muted);font-size:13px;">No session data for this exercise yet.</div>
   </div>
 </div>
 
@@ -2216,7 +2207,10 @@ function showDay(day) {
   document.getElementById('panel-' + day).classList.add('active');
   document.getElementById('wd-' + day).classList.add('active');
   updateHeatmap(day);
-  injectMissedSection(day);
+  const routine = getRoutine();
+  const isRest = !routine[day] || routine[day].length === 0;
+  if (isRest) injectRestNoteSection(day);
+  else injectMissedSection(day);
 }
 
 // ── GUIDE CARD TOGGLE ──
@@ -2340,9 +2334,12 @@ function startSession() {
   wlActive = true;
   document.getElementById('wl-session-editor').style.display = 'block';
   document.getElementById('wl-start-btn').style.display = 'none';
+  const timerEl = document.getElementById('session-timer-display');
+  if (timerEl) { timerEl.style.display = 'block'; timerEl.textContent = '0:00'; }
   document.getElementById('wl-session-date').value = toLocalDateStr(new Date());
   document.getElementById('wl-exercises-list').innerHTML = '';
   document.getElementById('wl-session-note').value = '';
+  startSessionTimer();
 
   const today = getTodayTrainingDay();
   const todayExercises = getExercisesForDay(today);
@@ -2358,6 +2355,9 @@ function startSession() {
 function cancelSession() {
   wlActive = false;
   wlEditingId = null;
+  stopSessionTimer();
+  const timerEl = document.getElementById('session-timer-display');
+  if (timerEl) timerEl.style.display = 'none';
   document.getElementById('wl-session-editor').style.display = 'none';
   document.getElementById('wl-start-btn').style.display = '';
   document.getElementById('wl-form-title').textContent = 'Start a session';
@@ -2472,13 +2472,12 @@ function saveSession() {
   });
   if (!exercises.length) { alert('Add at least one exercise with a completed set.'); return; }
 
+  const duration = wlEditingId ? null : stopSessionTimer();
   let log = getWL();
   if (wlEditingId) {
-    // Update existing session
     log = log.map(s => s.id === Number(wlEditingId) ? { ...s, date, note, exercises } : s);
   } else {
-    // New session
-    const session = { id: Date.now(), date, note, exercises };
+    const session = { id: Date.now(), date, note, exercises, duration };
     log.unshift(session);
   }
   saveWL(log);
@@ -2561,7 +2560,7 @@ function renderWL() {
         <div class="wl-session-date">${dayNum}</div>
         <div class="wl-session-meta">
           <div class="wl-session-title">${monthYear}${s.note ? ' · ' + s.note : ''}</div>
-          <div class="wl-session-sub">${s.exercises.length} exercise${s.exercises.length!==1?'s':''} · ${totalSets} sets</div>
+          <div class="wl-session-sub">${s.exercises.length} exercise${s.exercises.length!==1?'s':''} · ${totalSets} sets${s.duration ? ' · ' + formatDuration(s.duration) : ''}</div>
           <div class="wl-session-sub" style="margin-top:2px;font-size:10px;">${exSummary}</div>
         </div>
         <button class="wl-session-edit" onclick="event.stopPropagation();editSession(${s.id})" title="Edit session">
@@ -2673,7 +2672,7 @@ function renderPBs() {
     const pb = pbs[ex.name];
     const valText = pb ? `${pb.kg}kg × ${pb.reps}` : 'No record';
     const dateText = pb ? new Date(pb.date + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
-    return `<div class="pb-card${pbFilter !== 'all' && ex.cat !== pbFilter ? ' hidden' : ''}" data-pcat="${ex.cat}" id="pb-${id}">
+    return `<div class="pb-card${pbFilter !== 'all' && ex.cat !== pbFilter ? ' hidden' : ''}" data-pcat="${ex.cat}" id="pb-${id}" onclick="openProgressModal('${ex.name}')">
       <span class="pb-dot" style="background:${ex.dot};"></span>
       <div class="pb-info">
         <div class="pb-name">${ex.name}</div>
@@ -2682,14 +2681,14 @@ function renderPBs() {
           <input class="pb-edit-input" type="number" step="0.5" placeholder="kg" id="pbi-kg-${id}">
           <span style="font-size:12px;color:var(--muted2);">×</span>
           <input class="pb-edit-input" type="number" placeholder="reps" id="pbi-reps-${id}">
-          <button class="pb-edit-save" onclick="savePB('${id}','${ex.name}')">Save</button>
-          <button class="pb-edit-cancel" onclick="closePBEditor('${id}')">Cancel</button>
+          <button class="pb-edit-save" onclick="event.stopPropagation();savePB('${id}','${ex.name}')">Save</button>
+          <button class="pb-edit-cancel" onclick="event.stopPropagation();closePBEditor('${id}')">Cancel</button>
         </div>
       </div>
       <div class="pb-entry">
         <div class="pb-val${pb ? '' : ' empty'}" id="pbv-${id}">${valText}</div>
         <div class="pb-date" id="pbd-${id}">${dateText}</div>
-        <button class="pb-edit-btn" onclick="openPBEditor('${id}','${ex.name}')">${pb ? 'Update' : '+ Log PR'}</button>
+        <button class="pb-edit-btn" onclick="event.stopPropagation();openPBEditor('${id}','${ex.name}')">${pb ? 'Update' : '+ Log PR'}</button>
       </div>
     </div>`;
   }).join('');
@@ -2716,6 +2715,221 @@ function savePB(id, name) {
   savePBs(pbs);
   closePBEditor(id);
   renderPBs();
+}
+
+// ════════════════════════════════
+// PROGRESS CHART
+// ════════════════════════════════
+function openProgressModal(exerciseName) {
+  const log = getWL();
+  // Get all sets for this exercise across all sessions, sorted by date
+  const dataPoints = [];
+  log.forEach(session => {
+    const ex = session.exercises.find(e => e.name === exerciseName);
+    if (ex && ex.sets.length > 0) {
+      const maxKg = Math.max(...ex.sets.map(s => parseFloat(s.kg) || 0));
+      if (maxKg > 0) dataPoints.push({ date: session.date, kg: maxKg });
+    }
+  });
+  dataPoints.sort((a, b) => a.date.localeCompare(b.date));
+
+  document.getElementById('progress-modal-title').textContent = exerciseName;
+  document.getElementById('progress-modal').classList.add('open');
+
+  const canvas = document.getElementById('progress-chart-canvas');
+  const empty = document.getElementById('progress-modal-empty');
+  const statsEl = document.getElementById('progress-modal-stats');
+
+  if (dataPoints.length === 0) {
+    canvas.style.display = 'none';
+    empty.style.display = 'block';
+    statsEl.innerHTML = '';
+    return;
+  }
+
+  canvas.style.display = 'block';
+  empty.style.display = 'none';
+
+  // Stats
+  const weights = dataPoints.map(d => d.kg);
+  const first = weights[0], latest = weights[weights.length - 1];
+  const best = Math.max(...weights);
+  const change = latest - first;
+  statsEl.innerHTML = [
+    { label: 'Best', val: best + 'kg', color: 'var(--c1)' },
+    { label: 'Latest', val: latest + 'kg', color: 'var(--text)' },
+    { label: 'Change', val: (change >= 0 ? '+' : '') + change + 'kg', color: change >= 0 ? 'var(--c5)' : '#FF6B47' },
+    { label: 'Sessions', val: dataPoints.length, color: 'var(--muted)' },
+  ].map(s => `<div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+    <div style="font-size:16px;font-weight:700;color:${s.color};">${s.val}</div>
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">${s.label}</div>
+  </div>`).join('');
+
+  // Draw chart
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 340;
+  const H = 220;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 20, bottom: 40, left: 44 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const minV = Math.min(...weights) * 0.95;
+  const maxV = Math.max(...weights) * 1.05;
+
+  const xOf = i => pad.left + (i / (dataPoints.length - 1 || 1)) * cW;
+  const yOf = v => pad.top + cH - ((v - minV) / (maxV - minV || 1)) * cH;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (i / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+    const val = (maxV - (i / 4) * (maxV - minV)).toFixed(1);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '10px DM Sans, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(val, pad.left - 6, y + 4);
+  }
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(232,255,71,0.25)');
+  grad.addColorStop(1, 'rgba(232,255,71,0)');
+  ctx.beginPath();
+  ctx.moveTo(xOf(0), yOf(dataPoints[0].kg));
+  dataPoints.forEach((d, i) => ctx.lineTo(xOf(i), yOf(d.kg)));
+  ctx.lineTo(xOf(dataPoints.length - 1), pad.top + cH);
+  ctx.lineTo(xOf(0), pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = '#E8FF47';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  dataPoints.forEach((d, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(d.kg)) : ctx.lineTo(xOf(i), yOf(d.kg)));
+  ctx.stroke();
+
+  // Dots
+  dataPoints.forEach((d, i) => {
+    ctx.beginPath();
+    ctx.arc(xOf(i), yOf(d.kg), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#E8FF47';
+    ctx.fill();
+  });
+
+  // X axis dates
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '9px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.ceil(dataPoints.length / 5);
+  dataPoints.forEach((d, i) => {
+    if (i % step === 0 || i === dataPoints.length - 1) {
+      const label = new Date(d.date + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+      ctx.fillText(label, xOf(i), H - 8);
+    }
+  });
+}
+
+function closeProgressModal() {
+  document.getElementById('progress-modal').classList.remove('open');
+}
+
+// ════════════════════════════════
+// REST DAY NOTES
+// ════════════════════════════════
+const REST_NOTES_KEY = 'myRoutine_restNotes';
+function getRestNotes() { try { return JSON.parse(localStorage.getItem(REST_NOTES_KEY)) || {}; } catch { return {}; } }
+function saveRestNotes(n) { localStorage.setItem(REST_NOTES_KEY, JSON.stringify(n)); if(window.fbSave) fbSave('restNotes', n); }
+
+function getRestNoteKey(day) {
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = (dow === 0 ? -6 : 1) - dow;
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() + diff);
+  return day + '-rest-' + toLocalDateStr(weekStart);
+}
+
+function injectRestNoteSection(day) {
+  const panel = document.getElementById('panel-' + day);
+  if (!panel) return;
+  const existing = panel.querySelector('.rest-note-section');
+  if (existing) existing.remove();
+
+  const key = getRestNoteKey(day);
+  const notes = getRestNotes();
+  const saved = notes[key] || '';
+
+  const section = document.createElement('div');
+  section.className = 'rest-note-section';
+  section.innerHTML = `
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Rest day note</div>
+    <textarea class="rest-note-input" id="rest-note-${day}" rows="2" placeholder="How are you feeling? Recovery notes...">${saved}</textarea>
+    <button onclick="saveRestNote('${day}')" style="margin-top:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;">Save note</button>
+  `;
+  const restCard = panel.querySelector('.rest-card');
+  if (restCard) restCard.after(section);
+  else panel.appendChild(section);
+}
+
+function saveRestNote(day) {
+  const input = document.getElementById('rest-note-' + day);
+  if (!input) return;
+  const notes = getRestNotes();
+  notes[getRestNoteKey(day)] = input.value.trim();
+  saveRestNotes(notes);
+  // Brief confirmation
+  input.style.borderColor = 'var(--c5)';
+  setTimeout(() => { input.style.borderColor = ''; }, 1000);
+}
+
+// ════════════════════════════════
+// SESSION TIMER
+// ════════════════════════════════
+let sessionTimerInterval = null;
+let sessionTimerStart = null;
+let sessionTimerSeconds = 0;
+
+function startSessionTimer() {
+  sessionTimerStart = Date.now();
+  sessionTimerSeconds = 0;
+  clearInterval(sessionTimerInterval);
+  sessionTimerInterval = setInterval(() => {
+    sessionTimerSeconds = Math.floor((Date.now() - sessionTimerStart) / 1000);
+    const el = document.getElementById('session-timer-display');
+    if (el) el.textContent = formatSessionTime(sessionTimerSeconds);
+  }, 1000);
+}
+
+function stopSessionTimer() {
+  clearInterval(sessionTimerInterval);
+  const elapsed = sessionTimerSeconds;
+  sessionTimerSeconds = 0;
+  return elapsed;
+}
+
+function formatSessionTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function formatDuration(secs) {
+  if (!secs) return '';
+  const m = Math.floor(secs / 60);
+  if (m < 60) return m + ' min';
+  return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
 }
 
 // ════════════════════════════════
@@ -2957,60 +3171,69 @@ document.addEventListener('visibilitychange', async () => {
 // ════════════════════════════════
 // STREAK TRACKER
 // ════════════════════════════════
+function getMonday(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getWeekStartStr(date) {
+  return toLocalDateStr(getMonday(date));
+}
+
 function calcStreak() {
   const log = getWL();
-  if (!log.length) return { streak: 0, detail: 'Log sessions to start your streak' };
+  if (!log.length) return { streak: 0, sessionsThisWeek: 0 };
 
-  // Get unique weeks that had at least one session (Mon–Sun ISO weeks)
-  const getWeekKey = dateStr => {
-    const d = new Date(dateStr + 'T12:00:00');
-    const jan1 = new Date(d.getFullYear(), 0, 1);
-    const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
-    return d.getFullYear() + '-W' + String(week).padStart(2, '0');
-  };
+  const todayMonday = getWeekStartStr(new Date());
 
-  const weeks = [...new Set(log.map(s => getWeekKey(s.date)))].sort().reverse();
-  if (!weeks.length) return { streak: 0, detail: 'Log sessions to start your streak' };
+  // Count sessions this week
+  const sessionsThisWeek = log.filter(s => {
+    return getWeekStartStr(new Date(s.date + 'T12:00:00')) === todayMonday;
+  }).length;
 
-  const currentWeek = getWeekKey(toLocalDateStr(new Date()));
-  const lastWeek = (() => {
-    const d = new Date(); d.setDate(d.getDate() - 7);
-    return getWeekKey(toLocalDateStr(d));
-  })();
+  // Get unique week start dates that had sessions, sorted descending
+  const weekSet = new Set(log.map(s => getWeekStartStr(new Date(s.date + 'T12:00:00'))));
+  const weeks = [...weekSet].sort().reverse();
 
-  // Streak only counts if most recent logged week is current or last week
-  if (weeks[0] !== currentWeek && weeks[0] !== lastWeek) {
-    return { streak: 0, detail: 'Streak broken — get back in the gym!' };
-  }
-
+  // Streak: count consecutive weeks back from current or last week
   let streak = 0;
-  let check = weeks[0] === currentWeek ? currentWeek : lastWeek;
+  let checkDate = new Date();
+  checkDate = getMonday(checkDate);
 
-  for (const w of weeks) {
-    if (w === check) {
+  for (let i = 0; i < 52; i++) {
+    const weekStr = toLocalDateStr(checkDate);
+    if (weekSet.has(weekStr)) {
       streak++;
-      // Move check back one week
-      const [yr, wk] = check.split('-W').map(Number);
-      const prev = new Date(yr, 0, 1 + (wk - 2) * 7);
-      check = getWeekKey(toLocalDateStr(prev));
+      checkDate.setDate(checkDate.getDate() - 7);
+    } else if (i === 0) {
+      // Current week has no sessions yet — check last week before breaking
+      checkDate.setDate(checkDate.getDate() - 7);
+      const lastWeekStr = toLocalDateStr(checkDate);
+      if (weekSet.has(lastWeekStr)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 7);
+      } else {
+        break;
+      }
     } else {
       break;
     }
   }
 
-  const sessionsThisWeek = log.filter(s => getWeekKey(s.date) === currentWeek).length;
-  const detail = streak > 0
-    ? `${sessionsThisWeek} session${sessionsThisWeek !== 1 ? 's' : ''} this week`
-    : 'Log sessions to start your streak';
-
-  return { streak, detail };
+  return { streak, sessionsThisWeek };
 }
 
 function renderStreak() {
-  const { streak, detail } = calcStreak();
+  const { streak, sessionsThisWeek } = calcStreak();
   document.getElementById('streak-num').textContent = streak;
+  const detail = sessionsThisWeek > 0
+    ? `${sessionsThisWeek} session${sessionsThisWeek !== 1 ? 's' : ''} this week`
+    : streak > 0 ? 'Keep it up!' : 'Log sessions to start your streak';
   document.getElementById('streak-detail').textContent = detail;
-  // Make flame bigger if streak is going
   const flame = document.querySelector('.streak-flame');
   if (flame) flame.style.fontSize = streak >= 4 ? '28px' : streak >= 1 ? '24px' : '20px';
 }
