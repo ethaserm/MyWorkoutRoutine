@@ -2448,6 +2448,29 @@ function cancelSession() {
 
 const BARBELL_DUMBBELL_EXERCISES = ['Bench Press', 'Incline Bench Press', 'Deadlift'];
 
+function toggleBarDumbbell(rowId, type) {
+  const row = document.getElementById('wl-ex-' + rowId);
+  if (!row) return;
+  const baseName = row.dataset.baseName;
+  const select = document.getElementById('wl-ex-select-' + rowId);
+  const barBtn = document.getElementById('toggle-bar-' + rowId);
+  const dbBtn = document.getElementById('toggle-db-' + rowId);
+  const newName = type === 'db' ? baseName + ' (Dumbbell)' : baseName;
+
+  // Update select
+  if (select) {
+    for (let opt of select.options) {
+      if (opt.value === newName) { select.value = newName; break; }
+    }
+  }
+
+  // Update button styles
+  const activeStyle = 'font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.15);color:white;cursor:pointer;letter-spacing:0.05em;';
+  const inactiveStyle = 'font-family:\'DM Sans\',sans-serif;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:0.05em;';
+  if (barBtn) barBtn.style.cssText = type === 'bar' ? activeStyle : inactiveStyle;
+  if (dbBtn) dbBtn.style.cssText = type === 'db' ? activeStyle : inactiveStyle;
+}
+
 function getBarbellVariant(name) {
   return name; // barbell = original name
 }
@@ -2476,17 +2499,25 @@ function addExerciseRow() {
 function addExerciseRowWithData(exerciseName, numSets) {
   const id = wlExCounter++;
   const exNames = buildExerciseOptions(exerciseName);
+  const hasToggle = BARBELL_DUMBBELL_EXERCISES.includes(exerciseName);
+  const toggleHTML = hasToggle ? `
+    <div style="display:flex;gap:4px;margin-bottom:8px;">
+      <button onclick="toggleBarDumbbell(${id}, 'bar')" id="toggle-bar-${id}" class="bd-toggle active-toggle" style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.15);color:white;cursor:pointer;letter-spacing:0.05em;">BAR</button>
+      <button onclick="toggleBarDumbbell(${id}, 'db')" id="toggle-db-${id}" class="bd-toggle" style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;letter-spacing:0.05em;">DB</button>
+    </div>` : '';
   const div = document.createElement('div');
   div.className = 'wl-ex-row';
   div.id = 'wl-ex-' + id;
+  div.dataset.baseName = exerciseName;
   div.innerHTML = `
     <div class="wl-ex-header">
       <span class="wl-ex-drag" title="Drag to reorder">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </span>
-      <select class="wl-ex-name-select"><option value="">— Select exercise —</option>${exNames}</select>
+      <select class="wl-ex-name-select" id="wl-ex-select-${id}"><option value="">— Select exercise —</option>${exNames}</select>
       <button class="wl-ex-del" onclick="this.closest('.wl-ex-row').remove()">✕</button>
     </div>
+    ${toggleHTML}
     <div class="wl-sets-header">
       <span></span>
       <span class="wl-sets-col-label">Weight (kg)</span>
@@ -3055,8 +3086,8 @@ function formatDuration(secs) {
 // ════════════════════════════════
 const ROUTINE_KEY = 'myRoutine_userRoutine';
 const ROUTINE_TOPICS = {
-  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench Press','Bench Press (Dumbbell)','Incline Bench Press','Incline Bench Press (Dumbbell)','Low-to-High Flye','Push Up'] },
-  back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Deadlift (Dumbbell)','Pull Up','Single Arm Dumbbell Row','Shrugs'] },
+  chest:     { label: 'Chest',     color: '#E8FF47', exercises: ['Bench Press','Incline Bench Press','Low-to-High Flye','Push Up'] },
+  back:      { label: 'Back',      color: '#47C8FF', exercises: ['Deadlift','Pull Up','Single Arm Dumbbell Row','Shrugs'] },
   legs:      { label: 'Legs',      color: '#FF6B47', exercises: ['Weighted Squats','Weighted Lunges','Romanian Deadlift (RDL)','Goblet Squat','Single Dumbbell Squat','Calf Raises'] },
   shoulders: { label: 'Shoulders', color: '#C47BFF', exercises: ['Overhead Press','Lateral Raises','Front Raises','Reverse Raises (Rear Delt Flye)'] },
   biceps:    { label: 'Biceps',    color: '#47FFAA', exercises: ['Bicep Curls','Preacher Curls','Cross Curls (Cross-body)','Single Arm Curls (Concentration)','Hammer Curls'] },
