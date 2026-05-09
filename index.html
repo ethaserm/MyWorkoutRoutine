@@ -190,6 +190,8 @@ onAuthStateChanged(auth, async user => {
     currentUserId = user.uid;
     window.fbReady = true;
     document.getElementById('login-screen').style.display = 'none';
+    const emailEl = document.getElementById('signed-in-email');
+    if (emailEl) emailEl.textContent = user.email || user.displayName || '';
     window.fbLoadAll();
   } else {
     currentUserId = null;
@@ -865,6 +867,7 @@ setTimeout(dismissLoader, 5000);
   <p class="subtitle">Tap any training day to view your session. Tap an exercise for form tips.</p>
   <button onclick="if(confirm('Sign out?'))window.fbSignOut()" style="position:absolute;top:0;right:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Sign out</button>
   <button onclick="openRoutineEditor()" style="position:absolute;top:0;right:72px;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.25);color:var(--c1);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Edit Routine</button>
+  <div id="signed-in-email" style="position:absolute;top:36px;right:0;font-size:10px;color:var(--muted2);font-family:'DM Sans',sans-serif;letter-spacing:0.03em;"></div>
 </div>
 
 <!-- STREAK CARD -->
