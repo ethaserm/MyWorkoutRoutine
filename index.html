@@ -879,10 +879,10 @@ setTimeout(dismissLoader, 5000);
 
 <div class="week-strip">
   <div class="week-day" id="wd-mon" onclick="showDay('mon')"><span class="wd-name">Mon</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest · Triceps · Shoulders</span></div>
-  <div class="week-day rest-day" id="wd-tue"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
+  <div class="week-day rest-day" id="wd-tue" onclick="showDay('tue')"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
   <div class="week-day" id="wd-wed" onclick="showDay('wed')"><span class="wd-name">Wed</span><span class="wd-dot" style="background:var(--c2);"></span><span class="wd-label">Back · Biceps</span></div>
   <div class="week-day" id="wd-thu" onclick="showDay('thu')"><span class="wd-name">Thu</span><span class="wd-dot" style="background:var(--c3);"></span><span class="wd-label">Legs · Abs</span></div>
-  <div class="week-day rest-day" id="wd-fri"><span class="wd-name">Fri</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
+  <div class="week-day rest-day" id="wd-fri" onclick="showDay('fri')"><span class="wd-name">Fri</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
   <div class="week-day" id="wd-sat" onclick="showDay('sat')"><span class="wd-name">Sat</span><span class="wd-dot" style="background:var(--c4);"></span><span class="wd-label">Chest · Abs</span></div>
   <div class="week-day" id="wd-sun" onclick="showDay('sun')"><span class="wd-name">Sun</span><span class="wd-dot" style="background:var(--c5);"></span><span class="wd-label">Shoulders · Arms</span></div>
 </div>
@@ -3069,7 +3069,7 @@ function updateWeekStripFromRoutine() {
     const dotEl = wdEl.querySelector('.wd-dot');
     if (topics.length === 0) {
       wdEl.classList.add('rest-day');
-      wdEl.onclick = null;
+      wdEl.onclick = () => showDay(day);
       if (labelEl) labelEl.textContent = 'Rest';
       if (dotEl) dotEl.style.background = '#2a2a2a';
     } else {
