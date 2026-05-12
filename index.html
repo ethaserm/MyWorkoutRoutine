@@ -244,7 +244,7 @@ setTimeout(dismissLoader, 5000);
   .tab-item[data-page="pb"].active { color: var(--c4); }
 
   /* PAGES */
-  .page { display: none; padding: 1rem 1rem 1.5rem; }
+  .page { display: none; padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1rem 1.5rem; }
   .page.active { display: block; animation: fadeIn 0.2s ease; }
 
   /* SHARED HEADER */
@@ -264,7 +264,7 @@ setTimeout(dismissLoader, 5000);
   .week-day.active .wd-name { color: var(--text); }
   .wd-name { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.15s; }
   .wd-dot { width: 8px; height: 8px; border-radius: 50%; transition: transform 0.2s; }
-  .wd-label { font-size: 8px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted2); text-align: center; line-height: 1.4; word-break: break-word; }
+  .wd-label { font-size: 8px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted2); text-align: center; line-height: 1.4; word-break: break-word; max-width: 52px; overflow: hidden; }
   .rest-day { cursor: default; }
   .rest-day .wd-name { color: var(--muted2); }
 
@@ -865,9 +865,9 @@ setTimeout(dismissLoader, 5000);
   <p class="eyebrow">5-Day Split · No Tuesdays or Fridays</p>
   <h1>My <em>Weekly</em><br>Routine.</h1>
   <p class="subtitle">Tap any training day to view your session. Tap an exercise for form tips.</p>
-  <button onclick="if(confirm('Sign out?'))window.fbSignOut()" style="position:absolute;top:0;right:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Sign out</button>
-  <button onclick="openRoutineEditor()" style="position:absolute;top:0;right:72px;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.25);color:var(--c1);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Edit Routine</button>
-  <div id="signed-in-email" style="position:absolute;top:36px;right:0;font-size:10px;color:var(--muted2);font-family:'DM Sans',sans-serif;letter-spacing:0.03em;"></div>
+  <button onclick="if(confirm('Sign out?'))window.fbSignOut()" style="position:absolute;top:calc(env(safe-area-inset-top,0px) + 4px);right:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Sign out</button>
+  <button onclick="openRoutineEditor()" style="position:absolute;top:calc(env(safe-area-inset-top,0px) + 4px);right:72px;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.25);color:var(--c1);font-family:'DM Sans',sans-serif;font-size:10px;padding:5px 10px;border-radius:8px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Edit Routine</button>
+  <div id="signed-in-email" style="position:absolute;top:calc(env(safe-area-inset-top,0px) + 32px);right:0;font-size:10px;color:var(--muted2);font-family:'DM Sans',sans-serif;letter-spacing:0.03em;"></div>
 </div>
 
 <!-- STREAK CARD -->
@@ -938,6 +938,7 @@ setTimeout(dismissLoader, 5000);
         </div></div>
         <div class="section"><div class="section-label"><span class="bar bar2"></span>Biceps</div><div class="ex-list">
           <div class="ex-row" onclick="openModal('bicep-curls')"><span class="ex-name">Bicep curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
+          <div class="ex-row" onclick="openModal('preacher-curls')"><span class="ex-name">Preacher curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('cross-curls')"><span class="ex-name">Cross curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('single-curls')"><span class="ex-name">Single arm curls (heavier)</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('hammer-curls')"><span class="ex-name">Hammer curls</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
