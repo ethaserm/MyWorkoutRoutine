@@ -3730,7 +3730,7 @@ function renderWeeklyOverview() {
     }
 
     const statText = week.doneCount > 0 || week.missedCount > 0
-      ? `<span>${days.filter(d => d.session).length}</span>/${week.days.length} sessions`
+      ? `<span>${week.days.filter(d => d.session).length}</span>/${week.days.length} sessions`
       : 'No data';
 
     return `<div class="wo-week">
