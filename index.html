@@ -3689,20 +3689,33 @@ function renderWeeklyOverview() {
 
     const dayHTML = week.days.map(d => {
       let dot, note = '';
+      const wk = week.weekStartStr;
       if (d.isFuture) {
         dot = '<div class="wo-day-dot future"></div>';
       } else if (d.session) {
         dot = '<div class="wo-day-dot done">✓</div>';
         note = `<div class="wo-day-note" style="color:var(--c5);">${d.session.exercises.length} ex</div>`;
       } else if (d.missedEntry) {
-        dot = '<div class="wo-day-dot missed">✕</div>';
-        note = `<div class="wo-day-note">${d.missedEntry.reason}</div>`;
+        dot = `<div class="wo-day-dot missed" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')" style="cursor:pointer;" title="Edit reason">✕</div>`;
+        note = `<div class="wo-day-note" style="color:var(--muted);font-size:9px;cursor:pointer;" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')">${d.missedEntry.reason}</div>`;
       } else {
-        dot = '<div class="wo-day-dot empty"></div>';
+        dot = `<div class="wo-day-dot empty" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')" style="cursor:pointer;border:1px dashed rgba(255,255,255,0.2);" title="Log missed reason"></div>`;
       }
+      const formId = 'omf-' + d.dayKey + '-' + wk;
+      const inputId = 'missed-input-' + d.dayKey + '-' + wk;
+      const existingReason = d.missedEntry ? d.missedEntry.reason : '';
+      const missedForm = d.isFuture || d.session ? '' : `
+        <div class="overview-missed-form" id="${formId}" style="display:none;margin-top:6px;">
+          <textarea class="missed-input" id="${inputId}" rows="2" placeholder="Why missed?">${existingReason}</textarea>
+          <div style="display:flex;gap:4px;margin-top:4px;">
+            <button class="missed-save" style="flex:1;font-size:10px;padding:4px 6px;" onclick="saveMissedEntry('${d.dayKey}','${wk}')">Save</button>
+            ${d.missedEntry ? `<button class="missed-cancel" style="font-size:10px;padding:4px 6px;" onclick="clearMissed('${d.dayKey}','${wk}')">Clear</button>` : ''}
+            <button class="missed-cancel" style="font-size:10px;padding:4px 6px;" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')">✕</button>
+          </div>
+        </div>`;
       return `<div class="wo-day-cell">
         <div class="wo-day-name">${TRAINING_DAY_NAMES[d.dayKey]}</div>
-        ${dot}${note}
+        ${dot}${note}${missedForm}
       </div>`;
     }).join('');
 
@@ -3717,7 +3730,7 @@ function renderWeeklyOverview() {
     }
 
     const statText = week.doneCount > 0 || week.missedCount > 0
-      ? `<span>${week.doneCount}</span>/${week.days.length} sessions`
+      ? `<span>${days.filter(d => d.session).length}</span>/${week.days.length} sessions`
       : 'No data';
 
     return `<div class="wo-week">
@@ -4151,8 +4164,23 @@ const TRAINING_DAYS = ['mon', 'wed', 'thu', 'sat', 'sun'];
 function getMissed() { try { return JSON.parse(localStorage.getItem(MISSED_KEY)) || {}; } catch { return {}; } }
 function saveMissed(m) { localStorage.setItem(MISSED_KEY, JSON.stringify(m)); if(window.fbSave) fbSave('missed', m); }
 
-function getMissedKey(day) {
-  // Key = day + current week start (Monday)
+function toggleOverviewMissedForm(day, weekStartStr) {
+  const formId = 'omf-' + day + '-' + weekStartStr;
+  const form = document.getElementById(formId);
+  if (!form) return;
+  const isOpen = form.style.display !== 'none';
+  // Close all other open forms first
+  document.querySelectorAll('.overview-missed-form').forEach(f => f.style.display = 'none');
+  if (!isOpen) {
+    form.style.display = 'block';
+    const ta = form.querySelector('textarea');
+    if (ta) setTimeout(() => ta.focus(), 50);
+  }
+}
+
+function getMissedKey(day, weekStartStr) {
+  if (weekStartStr) return day + '-' + weekStartStr;
+  // Default: current week
   const now = new Date();
   const dow = now.getDay();
   const diff = (dow === 0 ? -6 : 1) - dow;
@@ -4213,22 +4241,31 @@ function toggleMissedForm(day) {
   }
 }
 
-function saveMissedEntry(day) {
-  const input = document.getElementById('missed-input-' + day);
+function saveMissedEntry(day, weekStartStr) {
+  const inputId = weekStartStr ? 'missed-input-' + day + '-' + weekStartStr : 'missed-input-' + day;
+  const input = document.getElementById(inputId);
   const reason = input ? input.value.trim() : '';
-  if (!reason) { input.focus(); return; }
+  if (!reason) { if(input) input.focus(); return; }
   const missed = getMissed();
-  const key = getMissedKey(day);
+  const key = getMissedKey(day, weekStartStr);
   missed[key] = { reason, date: toLocalDateStr(new Date()) };
   saveMissed(missed);
-  injectMissedSection(day);
+  if (weekStartStr) {
+    renderWeeklyOverview();
+  } else {
+    injectMissedSection(day);
+  }
 }
 
-function clearMissed(day) {
+function clearMissed(day, weekStartStr) {
   const missed = getMissed();
-  delete missed[getMissedKey(day)];
+  delete missed[getMissedKey(day, weekStartStr)];
   saveMissed(missed);
-  injectMissedSection(day);
+  if (weekStartStr) {
+    renderWeeklyOverview();
+  } else {
+    injectMissedSection(day);
+  }
 }
 
 let authMode = 'login';
