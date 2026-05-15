@@ -1257,9 +1257,21 @@ setTimeout(dismissLoader, 5000);
     </div>
     <div id="wl-session-editor" style="display:none;">
       <div class="wl-date-row">
-        <input type="date" id="wl-session-date" class="wt-date-input">
-        <input type="text" id="wl-session-note" class="wl-note-input" placeholder="Optional note (e.g. felt strong today)">
+        <select id="wl-session-day" class="wl-ex-name-select" style="flex:1;" onchange="syncSessionDate()">
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+        <select id="wl-session-week" class="wl-ex-name-select" style="flex:1;" onchange="syncSessionDate()"></select>
       </div>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="wl-session-note" class="wl-note-input" style="width:100%;" placeholder="Optional note (e.g. felt strong today)">
+      </div>
+      <input type="hidden" id="wl-session-date">
       <div id="wl-exercises-list"></div>
       <button class="wl-add-ex-btn" onclick="addExerciseRow()">+ Add exercise</button>
       <div class="wl-save-row">
@@ -1314,7 +1326,19 @@ setTimeout(dismissLoader, 5000);
         <option value="legs">Legs</option>
         <option value="abs">Abs / Core</option>
       </select>
-      <input type="date" id="photo-date" class="wt-date-input">
+      <div style="display:flex;gap:8px;">
+        <select id="photo-day" class="wl-ex-name-select" style="flex:1;" onchange="syncPhotoDate()">
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+        <select id="photo-week" class="wl-ex-name-select" style="flex:1;" onchange="syncPhotoDate()"></select>
+      </div>
+      <input type="hidden" id="photo-date">
       <div style="display:flex;gap:8px;">
         <button id="pump-yes" onclick="setPump(true)" class="pump-btn" style="flex:1;">💪 Pump</button>
         <button id="pump-no" onclick="setPump(false)" class="pump-btn" style="flex:1;">😴 No pump</button>
@@ -1490,7 +1514,19 @@ setTimeout(dismissLoader, 5000);
         <option value="legs">Legs</option>
         <option value="abs">Abs / Core</option>
       </select>
-      <input type="date" id="edit-photo-date" class="wt-date-input">
+      <div style="display:flex;gap:8px;">
+        <select id="edit-photo-day" class="wl-ex-name-select" style="flex:1;" onchange="syncEditPhotoDate()">
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+        <select id="edit-photo-week" class="wl-ex-name-select" style="flex:1;" onchange="syncEditPhotoDate()"></select>
+      </div>
+      <input type="hidden" id="edit-photo-date">
       <div style="display:flex;gap:8px;">
         <button id="edit-pump-yes" onclick="setEditPump(true)" class="pump-btn" style="flex:1;">💪 Pump</button>
         <button id="edit-pump-no" onclick="setEditPump(false)" class="pump-btn" style="flex:1;">😴 No pump</button>
@@ -2409,6 +2445,80 @@ function getTodayTrainingDay() {
   return days[new Date().getDay()];
 }
 
+// ── WEEK NUMBER SYSTEM ──
+const APP_START_KEY = 'myRoutine_appStart';
+
+function getAppStartDate() {
+  let stored = localStorage.getItem(APP_START_KEY);
+  if (!stored) {
+    const now = new Date();
+    const dow = now.getDay();
+    const diff = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0,0,0,0);
+    stored = toLocalDateStr(monday);
+    localStorage.setItem(APP_START_KEY, stored);
+  }
+  return new Date(stored + 'T00:00:00');
+}
+
+function getMondayOfDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const dow = d.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function dateToWeekNum(dateStr) {
+  const appStart = getAppStartDate();
+  const monday = getMondayOfDate(dateStr);
+  const diffMs = monday - appStart;
+  const diffWeeks = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+  return diffWeeks + 1;
+}
+
+function weekNumToMondayDate(weekNum) {
+  const appStart = getAppStartDate();
+  const monday = new Date(appStart);
+  monday.setDate(appStart.getDate() + (weekNum - 1) * 7);
+  return monday;
+}
+
+function dayKeyToDateInWeek(dayKey, mondayDate) {
+  const offsets = { mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6 };
+  const d = new Date(mondayDate);
+  d.setDate(mondayDate.getDate() + offsets[dayKey]);
+  return toLocalDateStr(d);
+}
+
+function buildWeekOptions(selectEl, selectedWeekNum) {
+  const now = new Date();
+  const currentWeek = dateToWeekNum(toLocalDateStr(now));
+  const maxWeek = currentWeek + 1;
+  selectEl.innerHTML = '';
+  for (let w = 1; w <= maxWeek; w++) {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = 'Week ' + w;
+    if (w === (selectedWeekNum || currentWeek)) opt.selected = true;
+    selectEl.appendChild(opt);
+  }
+}
+
+function dayKeyToLabel(dayKey) {
+  const labels = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+  return labels[dayKey] || dayKey;
+}
+
+function dateStrToLabel(dateStr) {
+  const dayKey = dateToDay(dateStr);
+  const weekNum = dateToWeekNum(dateStr);
+  return dayKeyToLabel(dayKey) + ' · Week ' + weekNum;
+}
+
 function startSession() {
   if (wlActive) return;
   wlActive = true;
@@ -2418,12 +2528,16 @@ function startSession() {
   const pauseBtn = document.getElementById('timer-pause-btn');
   if (timerEl) { timerEl.style.display = 'block'; timerEl.textContent = '0:00'; }
   if (pauseBtn) pauseBtn.style.display = 'block';
-  document.getElementById('wl-session-date').value = toLocalDateStr(new Date());
   document.getElementById('wl-exercises-list').innerHTML = '';
   document.getElementById('wl-session-note').value = '';
   startSessionTimer();
 
+  // Populate day selector to today, week selector to current week
   const today = getTodayTrainingDay();
+  document.getElementById('wl-session-day').value = today;
+  const weekSel = document.getElementById('wl-session-week');
+  buildWeekOptions(weekSel, dateToWeekNum(toLocalDateStr(new Date())));
+  syncSessionDate();
   const todayExercises = getExercisesForDay(today);
 
   if (todayExercises.length > 0) {
@@ -2578,7 +2692,15 @@ function removeSetRow(rowId, exId) {
   }
 }
 
+function syncSessionDate() {
+  const dayKey = document.getElementById('wl-session-day').value;
+  const weekNum = parseInt(document.getElementById('wl-session-week').value);
+  const monday = weekNumToMondayDate(weekNum);
+  document.getElementById('wl-session-date').value = dayKeyToDateInWeek(dayKey, monday);
+}
+
 function saveSession() {
+  syncSessionDate();
   const date = document.getElementById('wl-session-date').value;
   const note = document.getElementById('wl-session-note').value.trim();
   const exRows = document.querySelectorAll('.wl-ex-row');
@@ -2671,9 +2793,10 @@ function renderWL() {
   if (!log.length) { hist.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   hist.innerHTML = log.map(s => {
-    const d = new Date(s.date + 'T12:00:00');
-    const dayNum = d.getDate();
-    const monthYear = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    const label = dateStrToLabel(s.date); // e.g. "Thursday · Week 3"
+    const weekNum = dateToWeekNum(s.date);
+    const dayKey = dateToDay(s.date);
+    const shortDay = dayKeyToLabel(dayKey).slice(0,3); // "Thu"
     const exSummary = s.exercises.map(e => e.name).join(' · ');
     const totalSets = s.exercises.reduce((a, e) => a + e.sets.length, 0);
     const exDetail = s.exercises.map(ex => {
@@ -2682,9 +2805,12 @@ function renderWL() {
     }).join('');
     return `<div class="wl-session-card" id="wls-${s.id}">
       <div class="wl-session-header" onclick="toggleWLCard(${s.id})">
-        <div class="wl-session-date">${dayNum}</div>
+        <div class="wl-session-date" style="font-size:22px;min-width:52px;text-align:center;line-height:1.1;">
+          <div>${shortDay}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;margin-top:1px;">Wk ${weekNum}</div>
+        </div>
         <div class="wl-session-meta">
-          <div class="wl-session-title">${monthYear}${s.note ? ' · ' + s.note : ''}</div>
+          <div class="wl-session-title">${label}${s.note ? ' · ' + s.note : ''}</div>
           <div class="wl-session-sub">${s.exercises.length} exercise${s.exercises.length!==1?'s':''} · ${totalSets} sets${s.duration ? ' · ' + formatDuration(s.duration) : ''}</div>
           <div class="wl-session-sub" style="margin-top:2px;font-size:10px;">${exSummary}</div>
         </div>
@@ -2726,6 +2852,11 @@ function editSession(id) {
   document.getElementById('wl-session-editor').style.display = 'block';
   document.getElementById('wl-start-btn').style.display = 'none';
   document.getElementById('wl-form-title').textContent = 'Editing session';
+  // Restore day and week selectors from stored date
+  const editDayKey = dateToDay(session.date);
+  const editWeekNum = dateToWeekNum(session.date);
+  document.getElementById('wl-session-day').value = editDayKey;
+  buildWeekOptions(document.getElementById('wl-session-week'), editWeekNum);
   document.getElementById('wl-session-date').value = session.date;
   document.getElementById('wl-session-note').value = session.note || '';
   document.getElementById('wl-exercises-list').innerHTML = '';
@@ -3638,7 +3769,18 @@ function openPhotoEdit(id) {
   currentEditPump = photo.pump !== undefined ? photo.pump : null;
   document.getElementById('edit-photo-name').value = photo.name || '';
   document.getElementById('edit-photo-body-part').value = photo.bodyPart || '';
-  document.getElementById('edit-photo-date').value = photo.date || '';
+  // Populate day/week selectors from stored date
+  if (photo.date) {
+    const editDayKey = dateToDay(photo.date);
+    const editWeekNum = dateToWeekNum(photo.date);
+    document.getElementById('edit-photo-day').value = editDayKey;
+    buildWeekOptions(document.getElementById('edit-photo-week'), editWeekNum);
+    document.getElementById('edit-photo-date').value = photo.date;
+  } else {
+    document.getElementById('edit-photo-day').value = getTodayTrainingDay();
+    buildWeekOptions(document.getElementById('edit-photo-week'), dateToWeekNum(toLocalDateStr(new Date())));
+    syncEditPhotoDate();
+  }
   document.getElementById('edit-pump-yes').className = 'pump-btn' + (currentEditPump === true ? ' active-pump' : '');
   document.getElementById('edit-pump-no').className = 'pump-btn' + (currentEditPump === false ? ' active-nopump' : '');
   const modal = document.getElementById('photo-edit-modal');
@@ -3654,7 +3796,15 @@ function setEditPump(isPump) {
   document.getElementById('edit-pump-no').className = 'pump-btn' + (!isPump ? ' active-nopump' : '');
 }
 
+function syncEditPhotoDate() {
+  const dayKey = document.getElementById('edit-photo-day').value;
+  const weekNum = parseInt(document.getElementById('edit-photo-week').value);
+  const monday = weekNumToMondayDate(weekNum);
+  document.getElementById('edit-photo-date').value = dayKeyToDateInWeek(dayKey, monday);
+}
+
 function savePhotoEdit() {
+  syncEditPhotoDate();
   const photos = getPhotos();
   const idx = photos.findIndex(p => p.id === Number(currentEditPhotoId));
   if (idx === -1) return;
@@ -3711,7 +3861,10 @@ function handlePhotoUpload(e) {
     currentPhotoData = await compressImage(ev.target.result, 1200, 0.85);
     document.getElementById('photo-preview').src = currentPhotoData;
     document.getElementById('photo-form').style.display = 'block';
-    document.getElementById('photo-date').value = toLocalDateStr(new Date());
+    // Set day to today, week to current week
+    document.getElementById('photo-day').value = getTodayTrainingDay();
+    buildWeekOptions(document.getElementById('photo-week'), dateToWeekNum(toLocalDateStr(new Date())));
+    syncPhotoDate();
     document.getElementById('photo-name').value = '';
     document.getElementById('photo-body-part').value = '';
     currentPump = null;
@@ -3723,8 +3876,16 @@ function handlePhotoUpload(e) {
   e.target.value = '';
 }
 
+function syncPhotoDate() {
+  const dayKey = document.getElementById('photo-day').value;
+  const weekNum = parseInt(document.getElementById('photo-week').value);
+  const monday = weekNumToMondayDate(weekNum);
+  document.getElementById('photo-date').value = dayKeyToDateInWeek(dayKey, monday);
+}
+
 function savePhoto() {
   if (!currentPhotoData) return;
+  syncPhotoDate();
   const name = document.getElementById('photo-name').value.trim() || 'Progress photo';
   const bodyPart = document.getElementById('photo-body-part').value;
   const date = document.getElementById('photo-date').value || toLocalDateStr(new Date());
@@ -3796,7 +3957,7 @@ function showComparison() {
     <div style="flex:1;min-width:0;">
       <img src="${p.data}" style="width:100%;border-radius:10px;object-fit:cover;">
       <div style="margin-top:8px;font-size:13px;font-weight:600;color:white;">${p.name}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${p.date}${p.bodyPart ? ' · ' + (bodyPartLabels[p.bodyPart] || p.bodyPart) : ''}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${p.date ? dateStrToLabel(p.date) : ''}${p.bodyPart ? ' · ' + (bodyPartLabels[p.bodyPart] || p.bodyPart) : ''}</div>
     </div>`).join('');
   document.getElementById('photo-compare-modal').style.display = 'block';
 }
@@ -3837,7 +3998,7 @@ function renderPhotos() {
       <div class="photo-card-info">
         <div class="photo-card-label">${p.name}</div>
         <div class="photo-card-meta">
-          <span>${p.date}</span>
+          <span>${p.date ? dateStrToLabel(p.date) : ''}</span>
           ${p.bodyPart ? `<span class="photo-card-tag">${bodyPartLabels[p.bodyPart] || p.bodyPart}</span>` : ''}
           ${p.pump === true ? `<span class="photo-card-tag" style="background:rgba(232,255,71,0.15);color:var(--c1);">💪 Pump</span>` : p.pump === false ? `<span class="photo-card-tag" style="color:var(--muted2);">😴 No pump</span>` : ''}
         </div>
