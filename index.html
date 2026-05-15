@@ -2449,16 +2449,26 @@ function getTodayTrainingDay() {
 const APP_START_KEY = 'myRoutine_appStart';
 
 function getAppStartDate() {
+  // Anchor to the Monday of the earliest logged session (or current week if no sessions)
+  const log = getWL();
+  let earliestDate = toLocalDateStr(new Date());
+  if (log.length > 0) {
+    // Find the earliest date across all sessions
+    earliestDate = log.reduce((min, s) => s.date < min ? s.date : min, log[0].date);
+  }
+  // Also check photos
+  const photos = getPhotos();
+  if (photos.length > 0) {
+    const earliestPhoto = photos.reduce((min, p) => (p.date && p.date < min) ? p.date : min, earliestDate);
+    if (earliestPhoto < earliestDate) earliestDate = earliestPhoto;
+  }
+  const monday = getMondayOfDate(earliestDate);
+  // Store so it stays stable
   let stored = localStorage.getItem(APP_START_KEY);
-  if (!stored) {
-    const now = new Date();
-    const dow = now.getDay();
-    const diff = dow === 0 ? -6 : 1 - dow;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diff);
-    monday.setHours(0,0,0,0);
-    stored = toLocalDateStr(monday);
-    localStorage.setItem(APP_START_KEY, stored);
+  const mondayStr = toLocalDateStr(monday);
+  if (!stored || mondayStr < stored) {
+    localStorage.setItem(APP_START_KEY, mondayStr);
+    stored = mondayStr;
   }
   return new Date(stored + 'T00:00:00');
 }
@@ -2497,12 +2507,12 @@ function dayKeyToDateInWeek(dayKey, mondayDate) {
 function buildWeekOptions(selectEl, selectedWeekNum) {
   const now = new Date();
   const currentWeek = dateToWeekNum(toLocalDateStr(now));
-  const maxWeek = currentWeek + 1;
+  const maxWeek = currentWeek + 52; // Allow logging up to a year ahead
   selectEl.innerHTML = '';
   for (let w = 1; w <= maxWeek; w++) {
     const opt = document.createElement('option');
     opt.value = w;
-    opt.textContent = 'Week ' + w;
+    opt.textContent = 'Week ' + w + (w === currentWeek ? ' (this week)' : '');
     if (w === (selectedWeekNum || currentWeek)) opt.selected = true;
     selectEl.appendChild(opt);
   }
