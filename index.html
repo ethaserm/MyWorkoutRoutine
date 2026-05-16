@@ -2449,28 +2449,28 @@ function getTodayTrainingDay() {
 const APP_START_KEY = 'myRoutine_appStart';
 
 function getAppStartDate() {
-  // Anchor to the Monday of the earliest logged session (or current week if no sessions)
+  // Anchor = Monday of the Overview's earliest week (the week containing the earliest session)
+  // This must match getWeekStartDate exactly so week numbers align with the overview rows.
   const log = getWL();
-  let earliestDate = toLocalDateStr(new Date());
-  if (log.length > 0) {
-    // Find the earliest date across all sessions
-    earliestDate = log.reduce((min, s) => s.date < min ? s.date : min, log[0].date);
-  }
-  // Also check photos
-  const photos = getPhotos();
-  if (photos.length > 0) {
-    const earliestPhoto = photos.reduce((min, p) => (p.date && p.date < min) ? p.date : min, earliestDate);
-    if (earliestPhoto < earliestDate) earliestDate = earliestPhoto;
-  }
-  const monday = getMondayOfDate(earliestDate);
-  // Store so it stays stable
-  let stored = localStorage.getItem(APP_START_KEY);
-  const mondayStr = toLocalDateStr(monday);
-  if (!stored || mondayStr < stored) {
-    localStorage.setItem(APP_START_KEY, mondayStr);
-    stored = mondayStr;
-  }
-  return new Date(stored + 'T00:00:00');
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() + diff);
+  thisMonday.setHours(0,0,0,0);
+
+  if (log.length === 0) return thisMonday;
+
+  // Find earliest session date
+  const earliestDate = log.reduce((min, s) => s.date < min ? s.date : min, log[0].date);
+  // Find which Overview week that date falls in (count back from thisMonday in 7-day steps)
+  const earliest = new Date(earliestDate + 'T12:00:00');
+  const diffDays = Math.floor((thisMonday - earliest) / (24*60*60*1000));
+  const weeksBack = Math.ceil(diffDays / 7);
+  const anchor = new Date(thisMonday);
+  anchor.setDate(thisMonday.getDate() - weeksBack * 7);
+  anchor.setHours(0,0,0,0);
+  return anchor;
 }
 
 function getMondayOfDate(dateStr) {
@@ -3633,20 +3633,41 @@ function renderWeeklyOverview() {
   const log = getWL();
   const missed = getMissed();
 
-  // Build 8 weeks of data (current + 7 past)
+  // Find date range: from earliest session to current week
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() + diff);
+  thisMonday.setHours(0,0,0,0);
+
+  // Find earliest session date
+  let earliestMonday = new Date(thisMonday);
+  if (log.length > 0) {
+    const earliestDate = log.reduce((min, s) => s.date < min ? s.date : min, log[0].date);
+    earliestMonday = getMondayOfDate(earliestDate);
+  }
+  // Also check missed keys
+  Object.keys(missed).forEach(key => {
+    const parts = key.split('-');
+    if (parts.length >= 4) {
+      const dateStr = parts.slice(1).join('-');
+      const m = getMondayOfDate(dateStr);
+      if (m < earliestMonday) earliestMonday = m;
+    }
+  });
+
+  // Build weeks from earliest to current (newest first)
   const weeks = [];
-  for (let w = 0; w < 8; w++) {
-    const weekStart = getWeekStartDate(w);
+  let weekStart = new Date(thisMonday);
+  while (weekStart >= earliestMonday) {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-
     const weekStartStr = toLocalDateStr(weekStart);
     const weekEndStr = toLocalDateStr(weekEnd);
 
-    // Sessions this week
     const sessions = log.filter(s => s.date >= weekStartStr && s.date <= weekEndStr);
 
-    // Build day data for training days
     const days = TRAINING_DAY_ORDER.map(dayKey => {
       const dayOffset = { mon:0, tue:1, wed:2, thu:3, fri:4, sat:5, sun:6 };
       const dayDate = new Date(weekStart);
@@ -3654,22 +3675,20 @@ function renderWeeklyOverview() {
       const dayDateStr = toLocalDateStr(dayDate);
       const today = toLocalDateStr(new Date());
       const isFuture = dayDateStr > today;
-
       const session = sessions.find(s => s.date === dayDateStr);
       const missedKey = dayKey + '-' + weekStartStr;
       const missedEntry = missed[missedKey];
-
       return { dayKey, dayDateStr, isFuture, session, missedEntry };
     });
 
-    // Find any sessions on non-training days (Tue/Fri/any extra)
     const trainingDates = days.map(d => d.dayDateStr);
     const extraSessions = sessions.filter(s => !trainingDates.includes(s.date));
-
     const doneCount = days.filter(d => d.session).length + extraSessions.length;
     const missedCount = days.filter(d => !d.session && !d.isFuture && d.missedEntry).length;
 
-    weeks.push({ weekStart, weekStartStr, weekEndStr, days, doneCount, missedCount, extraSessions });
+    weeks.push({ weekStart: new Date(weekStart), weekStartStr, weekEndStr, days, doneCount, missedCount, extraSessions });
+
+    weekStart.setDate(weekStart.getDate() - 7);
   }
 
   // Check if any data exists
