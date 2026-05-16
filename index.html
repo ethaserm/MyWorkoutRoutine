@@ -3713,7 +3713,8 @@ function renderWeeklyOverview() {
         dot = '<div class="wo-day-dot future"></div>';
       } else if (d.session) {
         dot = '<div class="wo-day-dot done">✓</div>';
-        note = `<div class="wo-day-note" style="color:var(--c5);">${d.session.exercises.length} ex</div>`;
+        const noteText = d.session.note ? `<div class="wo-day-note" style="color:var(--muted);font-size:9px;">${d.session.note}</div>` : '';
+        note = `<div class="wo-day-note" style="color:var(--c5);">${d.session.exercises.length} ex</div>${noteText}`;
       } else if (d.missedEntry) {
         dot = `<div class="wo-day-dot missed" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')" style="cursor:pointer;" title="Edit reason">✕</div>`;
         note = `<div class="wo-day-note" style="color:var(--muted);font-size:9px;cursor:pointer;" onclick="toggleOverviewMissedForm('${d.dayKey}','${wk}')">${d.missedEntry.reason}</div>`;
