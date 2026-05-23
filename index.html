@@ -258,7 +258,7 @@ setTimeout(dismissLoader, 5000);
   /* WEEK STRIP */
   .week-strip { max-width: 760px; margin: 0 auto 2rem; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .week-day { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 10px 4px; border-radius: 10px; border: 1px solid transparent; transition: all 0.15s; }
-  .week-day:hover:not(.rest-day) { background: var(--surface2); border-color: var(--border2); }
+  .week-day:hover { background: var(--surface2); border-color: var(--border2); }
   .week-day.active { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.2); box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
   .week-day.active .wd-dot { transform: scale(1.6); box-shadow: 0 0 8px currentColor; }
   .week-day.active .wd-name { color: white; font-weight: 700; font-size: 11px; }
@@ -291,7 +291,7 @@ setTimeout(dismissLoader, 5000);
   .ex-name { font-size: 13px; color: var(--text); flex: 1; }
   .ex-sets { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; margin-left: 12px; }
   .ex-guide-hint { font-size: 10px; color: var(--c5); opacity: 0; transition: opacity 0.15s; margin-left: 8px; white-space: nowrap; }
-  .day-tip { margin-top: 12px; padding: 9px 12px; background: rgba(255,255,255,0.03); border-left: 2px solid; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--muted); line-height: 1.6; font-style: italic; }
+  .day-tip { margin-top: 14px; padding: 12px 14px; background: rgba(255,255,255,0.03); border-left: 3px solid; border-radius: 0 8px 8px 0; font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.7; font-style: italic; }
   .rest-note { margin-top: 12px; font-size: 11px; color: var(--muted2); }
 
   /* ── PHOTOS ── */
@@ -393,8 +393,8 @@ setTimeout(dismissLoader, 5000);
   .ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
   .ex-card:hover { border-color: var(--border2); }
   .ex-card.hidden { display: none; }
-  .ex-card-header { display: flex; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; transition: background 0.12s; }
-  .ex-card-header:hover { background: var(--surface2); }
+  .ex-card-header { display: flex; align-items: center; gap: 14px; padding: 16px; cursor: pointer; transition: background 0.12s; }
+  .ex-card-header:hover { background: rgba(255,255,255,0.03); }
   .ex-cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .ex-card-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--text); }
   .ex-card-muscle { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
@@ -567,8 +567,9 @@ setTimeout(dismissLoader, 5000);
   .wl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
   .wl-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
   .wl-card-title-row { display: flex; align-items: center; justify-content: space-between; }
-  .wl-start-btn { font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,159,71,0.3); background: rgba(255,159,71,0.08); color: #FF9F47; cursor: pointer; transition: all 0.15s; }
-  .wl-start-btn:hover { background: rgba(255,159,71,0.16); }
+  .wl-start-btn { font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 700; padding: 8px 18px; border-radius: 10px; border: none; background: #FF9F47; color: #0e0e0e; cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; box-shadow: 0 2px 12px rgba(255,159,71,0.3); }
+  .wl-start-btn:hover { background: #ffb060; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,159,71,0.4); }
+  .wl-start-btn:active { transform: translateY(0); }
   .wl-date-row { display: flex; gap: 8px; margin: 14px 0 12px; flex-wrap: wrap; }
   .wl-note-input { flex: 1; min-width: 160px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: 'DM Sans',sans-serif; font-size: 13px; padding: 8px 12px; outline: none; }
   .wl-note-input:focus { border-color: #FF9F47; }
@@ -649,10 +650,11 @@ setTimeout(dismissLoader, 5000);
   .pb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.15s; cursor: pointer; }
   .pb-card:hover { border-color: var(--border2); }
   .pb-card.hidden { display: none; }
-  /* Progress chart modal */
-  .progress-modal { display:none; position:fixed; inset:0; z-index:500; background:#0e0e0e; overflow-y:auto; padding:1rem; }
-  .progress-modal.open { display:block; }
-  .progress-chart-wrap { max-width:760px; margin:0 auto; }
+  /* Progress chart modal - bottom sheet */
+  .progress-modal { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:flex-end; justify-content:center; }
+  .progress-modal.open { display:flex; animation:fadeIn 0.2s ease; }
+  .progress-chart-wrap { background:var(--surface); border:1px solid var(--border2); border-radius:24px 24px 0 0; width:100%; max-width:760px; max-height:85vh; overflow-y:auto; padding:1.5rem 1.2rem calc(env(safe-area-inset-bottom,0px) + 1.5rem); animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform:translateY(40px); opacity:0; } to { transform:translateY(0); opacity:1; } }
   /* Rest day notes */
   .rest-note-section { margin-top:14px; border-top:1px solid var(--border); padding-top:12px; }
   .rest-note-input { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:10px 12px; outline:none; resize:none; }
@@ -724,7 +726,7 @@ setTimeout(dismissLoader, 5000);
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:#0e0e0e;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:radial-gradient(ellipse at 30% 20%, rgba(232,255,71,0.04) 0%, #0b0b0b 60%);flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
   <svg viewBox="0 0 280 340" width="72" style="margin-bottom:28px;" xmlns="http://www.w3.org/2000/svg">
     <rect width="280" height="340" rx="48" fill="#111"/>
     <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
@@ -747,8 +749,8 @@ setTimeout(dismissLoader, 5000);
     <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
   </svg>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
-    <input id="login-email" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;">
-    <input id="login-password" type="password" autocomplete="current-password" placeholder="Password" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+    <input id="login-email" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(232,255,71,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+    <input id="login-password" type="password" autocomplete="current-password" placeholder="Password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(232,255,71,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'" onkeydown="if(event.key==='Enter')doLogin()">
     <div id="login-error" style="font-size:12px;color:#FF6B47;text-align:center;min-height:16px;"></div>
     <button id="login-btn" onclick="doLogin()" style="background:#E8FF47;color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;width:100%;">Sign in</button>
     <button id="signup-btn" onclick="doSignUp()" style="display:none;background:#E8FF47;color:#0e0e0e;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;width:100%;">Create account</button>
@@ -890,6 +892,7 @@ setTimeout(dismissLoader, 5000);
     <div class="streak-num" id="streak-num">0</div>
     <div class="streak-label">week streak</div>
   </div>
+  <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;height:28px;padding:0 8px;" id="streak-bars"></div>
   <div class="streak-detail" id="streak-detail">Log sessions to start your streak</div>
 </div>
 
@@ -1192,21 +1195,23 @@ setTimeout(dismissLoader, 5000);
     padding: 8px 12px; outline: none; cursor: pointer;
   }
   .wt-date-input:focus { border-color: var(--c2); }
+  .wt-log-btn-prev { display: none; }
   .wt-log-btn {
     background: rgba(71,200,255,0.12); border: 1px solid rgba(71,200,255,0.3); border-radius: 8px;
     color: var(--c2); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
     padding: 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em;
   }
-  .wt-log-btn:hover { background: rgba(71,200,255,0.2); }
+  .wt-log-btn:hover { background: var(--c2); color: #0e0e0e; transform: translateY(-1px); }
   .wt-msg { font-size: 12px; color: var(--c5); min-height: 18px; margin-top: 4px; }
 
   .wt-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   @media (max-width: 500px) { .wt-stats { grid-template-columns: repeat(2, 1fr); } }
-  .wt-stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px; }
-  .wt-stat-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-  .wt-stat-val { font-size: 20px; font-weight: 300; color: var(--text); font-variant-numeric: tabular-nums; }
-  .wt-stat-val.up { color: #FF6B47; }
-  .wt-stat-val.down { color: var(--c5); }
+  .wt-stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; transition: border-color 0.15s; }
+  .wt-stat-card:hover { border-color: var(--border2); }
+  .wt-stat-label { font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted2); margin-bottom: 8px; }
+  .wt-stat-val { font-family: 'Bebas Neue',sans-serif; font-size: 26px; letter-spacing: 0.02em; color: var(--c2); font-variant-numeric: tabular-nums; }
+  .wt-stat-val.up { color: #FF6B47; text-shadow: 0 0 12px rgba(255,107,71,0.3); }
+  .wt-stat-val.down { color: var(--c5); text-shadow: 0 0 12px rgba(71,255,170,0.3); }
 
   .wt-range-btns { display: flex; gap: 4px; }
   .wt-range-btn {
@@ -1577,19 +1582,20 @@ setTimeout(dismissLoader, 5000);
   </div>
 </div>
 
-<!-- PROGRESS CHART MODAL -->
-<div id="progress-modal" class="progress-modal">
+<!-- PROGRESS CHART MODAL - Bottom Sheet -->
+<div id="progress-modal" class="progress-modal" onclick="if(event.target===this)closeProgressModal()">
   <div class="progress-chart-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-top:0.5rem;">
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <div>
         <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Progress</div>
-        <div id="progress-modal-title" style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);letter-spacing:0.05em;"></div>
+        <div id="progress-modal-title" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);letter-spacing:0.05em;"></div>
       </div>
-      <button onclick="closeProgressModal()" style="background:rgba(255,255,255,0.08);border:1px solid var(--border2);color:var(--text);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <button onclick="closeProgressModal()" style="background:rgba(255,255,255,0.08);border:1px solid var(--border2);color:var(--text);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
     </div>
-    <div id="progress-modal-stats" style="display:flex;gap:12px;margin-bottom:1rem;"></div>
+    <div id="progress-modal-stats" style="display:flex;gap:8px;margin-bottom:1rem;"></div>
     <canvas id="progress-chart-canvas" style="width:100%;border-radius:12px;"></canvas>
-    <div id="progress-modal-empty" style="display:none;text-align:center;padding:3rem;color:var(--muted);font-size:13px;">No session data for this exercise yet.</div>
+    <div id="progress-modal-empty" style="display:none;text-align:center;padding:2rem;color:var(--muted);font-size:13px;">No session data for this exercise yet.</div>
   </div>
 </div>
 
@@ -3437,7 +3443,34 @@ function renderStreak() {
     : streak > 0 ? 'Keep it up!' : 'Log sessions to start your streak';
   document.getElementById('streak-detail').textContent = detail;
   const flame = document.querySelector('.streak-flame');
-  if (flame) flame.style.fontSize = streak >= 4 ? '28px' : streak >= 1 ? '24px' : '20px';
+  if (flame) flame.style.fontSize = streak >= 4 ? '32px' : streak >= 1 ? '28px' : '24px';
+
+  // 7-day mini bar chart — last 7 days
+  const log = getWL();
+  const barsEl = document.getElementById('streak-bars');
+  if (barsEl) {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(toLocalDateStr(d));
+    }
+    const dayLabels = ['M','T','W','T','F','S','S'];
+    const todayStr = toLocalDateStr(new Date());
+    barsEl.innerHTML = days.map((dateStr, i) => {
+      const hasSession = log.some(s => s.date === dateStr);
+      const isToday = dateStr === todayStr;
+      const isFuture = dateStr > todayStr;
+      const color = hasSession ? 'var(--c1)' : isFuture ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)';
+      const height = hasSession ? '100%' : '30%';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;">
+        <div style="width:100%;height:20px;display:flex;align-items:flex-end;">
+          <div style="width:100%;height:${height};background:${color};border-radius:3px 3px 0 0;transition:height 0.3s;${isToday && !hasSession ? 'border:1px solid rgba(255,255,255,0.2);border-bottom:none;' : ''}"></div>
+        </div>
+        <div style="font-size:7px;color:${isToday ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'};letter-spacing:0.05em;">${dayLabels[i]}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ════════════════════════════════
