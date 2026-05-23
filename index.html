@@ -328,19 +328,20 @@ setTimeout(dismissLoader, 5000);
   .log-tab-panel.active { display: block; animation: fadeIn 0.18s ease; overflow: visible; }
 
   /* ── WEEKLY OVERVIEW ── */
-  .wo-week { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
-  .wo-week-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .wo-week-label { font-family: 'Bebas Neue',sans-serif; font-size: 20px; color: var(--text); letter-spacing: 0.05em; }
-  .wo-week-stat { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-  .wo-week-stat span { color: #FF9F47; font-weight: 600; }
+  .wo-week { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); transition: border-color 0.15s; }
+  .wo-week:hover { border-color: var(--border2); }
+  .wo-week-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); }
+  .wo-week-label { font-family: 'Bebas Neue',sans-serif; font-size: 22px; color: var(--text); letter-spacing: 0.05em; }
+  .wo-week-stat { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,159,71,0.08); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,159,71,0.15); }
+  .wo-week-stat span { color: #FF9F47; font-weight: 700; }
   .wo-days-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); }
-  .wo-day-cell { background: var(--surface); padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; }
-  .wo-day-name { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); }
-  .wo-day-dot { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-  .wo-day-dot.done { background: rgba(71,255,170,0.15); }
-  .wo-day-dot.missed { background: rgba(255,107,71,0.12); }
-  .wo-day-dot.empty { background: var(--surface2); }
-  .wo-day-dot.future { background: transparent; border: 1px dashed var(--border2); }
+  .wo-day-cell { background: var(--surface); padding: 10px 8px; display: flex; flex-direction: column; gap: 5px; align-items: center; text-align: center; }
+  .wo-day-name { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); }
+  .wo-day-dot { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; font-weight: 700; }
+  .wo-day-dot.done { background: rgba(71,255,170,0.15); color: var(--c5); border: 1px solid rgba(71,255,170,0.25); }
+  .wo-day-dot.missed { background: rgba(255,107,71,0.12); color: #FF6B47; border: 1px solid rgba(255,107,71,0.2); }
+  .wo-day-dot.empty { background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+  .wo-day-dot.future { background: transparent; border: 1px dashed rgba(255,255,255,0.08); }
   .wo-day-note { font-size: 10px; color: var(--muted); line-height: 1.3; word-break: break-word; }
   .wo-empty { text-align: center; padding: 3rem 1rem; }
   .wo-empty-title { font-family: 'Bebas Neue',sans-serif; font-size: 22px; color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 8px; }
@@ -395,11 +396,9 @@ setTimeout(dismissLoader, 5000);
   .guide-grid { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
   .guide-cat-group { display: flex; flex-direction: column; gap: 0; }
   .guide-cat-header { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 14px; border-radius: 10px 10px 0 0; border: 1px solid; border-bottom: none; }
-  .guide-cat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 0 0 12px 12px; overflow: hidden; }
-  @media (max-width: 500px) { .guide-cat-cards { grid-template-columns: 1fr; } }
-  .ex-card { background: var(--surface); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); overflow: hidden; transition: background 0.15s; }
-  .ex-card:nth-child(even) { border-right: none; }
-  .ex-card:last-child, .ex-card:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+  .guide-cat-cards { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 0 0 12px 12px; overflow: hidden; }
+  .ex-card { background: var(--surface); border-bottom: 1px solid var(--border); overflow: hidden; transition: background 0.15s; }
+  .ex-card:last-child { border-bottom: none; }
   .ex-card.hidden { display: none; }
   .ex-card-header { display: flex; align-items: center; gap: 12px; padding: 14px 14px; cursor: pointer; transition: background 0.12s; }
   .ex-card-header:hover { background: rgba(255,255,255,0.03); }
@@ -569,6 +568,8 @@ setTimeout(dismissLoader, 5000);
   /* ── SHARED NEW COLOURS ── */
   h1 em.lo { color: #FF9F47; }
   h1 em.pb { color: var(--c4); }
+  h1 em.w { color: var(--c2); text-shadow: 0 0 30px rgba(71,200,255,0.4); }
+  h1 em.w { color: var(--c2); text-shadow: 0 0 30px rgba(71,200,255,0.4); }
 
   /* ── WORKOUT LOG ── */
   .wl-wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
@@ -1092,7 +1093,6 @@ setTimeout(dismissLoader, 5000);
 <div class="page-header">
   <p class="eyebrow">Progress Tracker</p>
   <h1>Body<br><em class="w">Weight.</em></h1>
-  <p class="subtitle">Log your weight and track progress over time. Stored locally on your device.</p>
 </div>
 
 <div class="wt-wrap">
@@ -1113,7 +1113,7 @@ setTimeout(dismissLoader, 5000);
 
   <!-- STATS -->
   <div class="wt-stats" id="wt-stats" style="display:none;">
-    <div class="wt-stat-card">
+    <div class="wt-stat-card" style="border-color:rgba(71,200,255,0.2);background:rgba(71,200,255,0.04);">
       <div class="wt-stat-label">Current</div>
       <div class="wt-stat-val" id="stat-current">—</div>
     </div>
