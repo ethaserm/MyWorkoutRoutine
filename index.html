@@ -259,11 +259,12 @@ setTimeout(dismissLoader, 5000);
   .week-strip { max-width: 760px; margin: 0 auto 2rem; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .week-day { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 10px 4px; border-radius: 10px; border: 1px solid transparent; transition: all 0.15s; }
   .week-day:hover:not(.rest-day) { background: var(--surface2); border-color: var(--border2); }
-  .week-day.active { background: var(--surface2); border-color: rgba(255,255,255,0.15); box-shadow: 0 0 0 1px rgba(255,255,255,0.06); }
-  .week-day.active .wd-dot { transform: scale(1.5); box-shadow: 0 0 6px currentColor; }
-  .week-day.active .wd-name { color: var(--text); font-weight: 700; }
+  .week-day.active { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.2); box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+  .week-day.active .wd-dot { transform: scale(1.6); box-shadow: 0 0 8px currentColor; }
+  .week-day.active .wd-name { color: white; font-weight: 700; font-size: 11px; }
+  .week-day.active .wd-label { color: rgba(255,255,255,0.5); }
   .wd-name { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.15s; }
-  .wd-dot { width: 8px; height: 8px; border-radius: 50%; transition: transform 0.2s; }
+  .wd-dot { width: 9px; height: 9px; border-radius: 50%; transition: transform 0.2s; flex-shrink: 0; }
   .wd-label { font-size: 7px; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted2); text-align: center; line-height: 1.3; max-width: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .rest-day { cursor: pointer; }
   .rest-day .wd-name { color: var(--muted2); }
@@ -342,12 +343,12 @@ setTimeout(dismissLoader, 5000);
   .wt-empty { text-align:center; padding:3rem 1rem; }
   .missed-section { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px; }
   .missed-btn {
-    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
-    padding: 9px; border-radius: 8px; border: 1px solid rgba(255,107,71,0.25);
-    background: transparent; color: rgba(255,107,71,0.6); cursor: pointer;
-    transition: all 0.15s; letter-spacing: 0.04em;
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 11px; border-radius: 10px; border: 1px solid rgba(255,107,71,0.35);
+    background: rgba(255,107,71,0.07); color: rgba(255,107,71,0.8); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .missed-btn:hover { background: rgba(255,107,71,0.08); color: #FF6B47; border-color: rgba(255,107,71,0.5); }
+  .missed-btn:hover { background: rgba(255,107,71,0.14); color: #FF6B47; border-color: rgba(255,107,71,0.6); }
   .missed-form { display: none; margin-top: 10px; flex-direction: column; gap: 8px; }
   .missed-form.open { display: flex; }
   .missed-input {
@@ -638,7 +639,13 @@ setTimeout(dismissLoader, 5000);
   /* ── PERSONAL BESTS ── */
   .pb-wrap { max-width: 760px; margin: 0 auto; }
   .pb-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
-  .pb-grid { display: flex; flex-direction: column; gap: 8px; }
+  .pb-grid { display: flex; flex-direction: column; gap: 16px; }
+  .pb-cat-group { display: flex; flex-direction: column; gap: 0; }
+  .pb-cat-header { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 14px; border-radius: 10px 10px 0 0; border: 1px solid; border-bottom: none; }
+  .pb-cat-bar { width: 4px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .pb-cat-cards { border: 1px solid var(--border); border-radius: 0 0 12px 12px; overflow: hidden; }
+  .pb-cat-cards .pb-card { border-radius: 0; border: none; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .pb-cat-cards .pb-card:last-child { border-bottom: none; }
   .pb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.15s; cursor: pointer; }
   .pb-card:hover { border-color: var(--border2); }
   .pb-card.hidden { display: none; }
@@ -1239,7 +1246,7 @@ setTimeout(dismissLoader, 5000);
 <div class="page" id="page-log">
 <div class="page-header">
   <p class="eyebrow">Session History</p>
-  <h1>Workout<br><em class="lo">Log.</em></h1>
+  <h1>Workout<br><em class="lo" style="text-shadow:0 0 30px rgba(255,159,71,0.4);">Log.</em></h1>
 </div>
 
 <!-- INNER LOG TABS -->
@@ -2789,40 +2796,77 @@ let pbFilter = 'all';
 
 function filterPB(cat, btn) {
   pbFilter = cat;
-  document.querySelectorAll('[data-pcat]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.pb-card').forEach(c => {
-    c.classList.toggle('hidden', cat !== 'all' && c.dataset.pcat !== cat);
+  document.querySelectorAll('.pb-filters .filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.pb-cat-group').forEach(g => {
+    if (cat === 'all') { g.style.display = ''; return; }
+    const hasMatch = [...g.querySelectorAll('.pb-card')].some(c => c.dataset.pcat === cat);
+    g.style.display = hasMatch ? '' : 'none';
   });
 }
 
 function renderPBs() {
   const pbs = getPBs();
   const grid = document.getElementById('pb-grid');
-  grid.innerHTML = Object.entries(EXERCISES).map(([id, ex]) => {
-    const pb = pbs[ex.name];
-    const valText = pb ? `${pb.kg}kg × ${pb.reps}` : 'No record';
-    const dateText = pb ? new Date(pb.date + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
-    return `<div class="pb-card${pbFilter !== 'all' && ex.cat !== pbFilter ? ' hidden' : ''}" data-pcat="${ex.cat}" id="pb-${id}" onclick="openProgressModal('${ex.name}')">
-      <span class="pb-dot" style="background:${ex.dot};"></span>
-      <div class="pb-info">
-        <div class="pb-name">${ex.name}</div>
-        <div class="pb-muscle">${ex.muscle}</div>
-        <div class="pb-editor" id="pbe-${id}">
-          <input class="pb-edit-input" type="number" step="0.5" placeholder="kg" id="pbi-kg-${id}">
-          <span style="font-size:12px;color:var(--muted2);">×</span>
-          <input class="pb-edit-input" type="number" placeholder="reps" id="pbi-reps-${id}">
-          <button class="pb-edit-save" onclick="event.stopPropagation();savePB('${id}','${ex.name}')">Save</button>
-          <button class="pb-edit-cancel" onclick="event.stopPropagation();closePBEditor('${id}')">Cancel</button>
+
+  const catConfig = {
+    chest:     { label: 'Chest',     color: 'var(--c1)', bg: 'rgba(232,255,71,0.06)',  border: 'rgba(232,255,71,0.15)'  },
+    back:      { label: 'Back',      color: 'var(--c2)', bg: 'rgba(71,200,255,0.06)',  border: 'rgba(71,200,255,0.15)'  },
+    legs:      { label: 'Legs',      color: 'var(--c3)', bg: 'rgba(255,107,71,0.06)',  border: 'rgba(255,107,71,0.15)'  },
+    shoulders: { label: 'Shoulders', color: 'var(--c4)', bg: 'rgba(196,123,255,0.06)', border: 'rgba(196,123,255,0.15)' },
+    arms:      { label: 'Arms',      color: 'var(--c5)', bg: 'rgba(71,255,170,0.06)',  border: 'rgba(71,255,170,0.15)'  },
+    core:      { label: 'Core',      color: '#FF9F47',   bg: 'rgba(255,159,71,0.06)',  border: 'rgba(255,159,71,0.15)'  },
+  };
+
+  // Group exercises by category
+  const groups = {};
+  Object.entries(EXERCISES).forEach(([id, ex]) => {
+    if (!groups[ex.cat]) groups[ex.cat] = [];
+    groups[ex.cat].push({ id, ex });
+  });
+
+  const catOrder = ['chest','back','legs','shoulders','arms','core'];
+
+  const html = catOrder.map(cat => {
+    const items = groups[cat];
+    if (!items) return '';
+    const cfg = catConfig[cat] || { label: cat, color: 'var(--muted)', bg: 'transparent', border: 'var(--border)' };
+    const hidden = pbFilter !== 'all' && pbFilter !== cat ? ' style="display:none"' : '';
+
+    const cards = items.map(({ id, ex }) => {
+      const pb = pbs[ex.name];
+      const valText = pb ? `${pb.kg}kg × ${pb.reps}` : 'No record';
+      const dateText = pb ? new Date(pb.date + 'T12:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
+      return `<div class="pb-card" data-pcat="${ex.cat}" id="pb-${id}" onclick="openProgressModal('${ex.name}')">
+        <span class="pb-dot" style="background:${ex.dot};"></span>
+        <div class="pb-info">
+          <div class="pb-name">${ex.name}</div>
+          <div class="pb-muscle">${ex.muscle}</div>
+          <div class="pb-editor" id="pbe-${id}">
+            <input class="pb-edit-input" type="number" step="0.5" placeholder="kg" id="pbi-kg-${id}">
+            <span style="font-size:12px;color:var(--muted2);">×</span>
+            <input class="pb-edit-input" type="number" placeholder="reps" id="pbi-reps-${id}">
+            <button class="pb-edit-save" onclick="event.stopPropagation();savePB('${id}','${ex.name}')">Save</button>
+            <button class="pb-edit-cancel" onclick="event.stopPropagation();closePBEditor('${id}')">Cancel</button>
+          </div>
         </div>
+        <div class="pb-entry">
+          <div class="pb-val${pb ? '' : ' empty'}" id="pbv-${id}" style="${pb ? `color:${cfg.color};text-shadow:0 0 12px ${cfg.color}44;` : ''}">${valText}</div>
+          <div class="pb-date" id="pbd-${id}">${dateText}</div>
+          <button class="pb-edit-btn" onclick="event.stopPropagation();openPBEditor('${id}','${ex.name}')">${pb ? 'Update' : '+ Log PR'}</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="pb-cat-group"${hidden}>
+      <div class="pb-cat-header" style="color:${cfg.color};border-color:${cfg.border};background:${cfg.bg};">
+        <span class="pb-cat-bar" style="background:${cfg.color};box-shadow:0 0 6px ${cfg.color};"></span>
+        ${cfg.label}
       </div>
-      <div class="pb-entry">
-        <div class="pb-val${pb ? '' : ' empty'}" id="pbv-${id}">${valText}</div>
-        <div class="pb-date" id="pbd-${id}">${dateText}</div>
-        <button class="pb-edit-btn" onclick="event.stopPropagation();openPBEditor('${id}','${ex.name}')">${pb ? 'Update' : '+ Log PR'}</button>
-      </div>
+      <div class="pb-cat-cards">${cards}</div>
     </div>`;
   }).join('');
+
+  grid.innerHTML = html;
 }
 
 function openPBEditor(id, name) {
