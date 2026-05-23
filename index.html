@@ -3208,6 +3208,8 @@ function getExercisesForDay(day) {
   return exercises;
 }
 
+const DAY_COLORS = { mon: 'var(--c1)', wed: 'var(--c2)', thu: 'var(--c3)', sat: 'var(--c4)', sun: 'var(--c5)' };
+
 function updateWeekStripFromRoutine() {
   const routine = getRoutine();
   ALL_DAYS.forEach(day => {
@@ -3225,7 +3227,7 @@ function updateWeekStripFromRoutine() {
       wdEl.classList.remove('rest-day');
       wdEl.onclick = () => showDay(day);
       if (labelEl) labelEl.textContent = topics.map(t => ROUTINE_TOPICS[t]?.label || t).join(' · ');
-      if (dotEl) dotEl.style.background = ROUTINE_TOPICS[topics[0]]?.color || 'var(--c1)';
+      if (dotEl) dotEl.style.background = DAY_COLORS[day] || ROUTINE_TOPICS[topics[0]]?.color || 'var(--c1)';
     }
   });
 }
