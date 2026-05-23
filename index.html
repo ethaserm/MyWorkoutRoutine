@@ -196,8 +196,13 @@ onAuthStateChanged(auth, async user => {
   } else {
     currentUserId = null;
     window.fbReady = false;
-    dismissLoader();
-    document.getElementById('login-screen').style.display = 'flex';
+    // Small delay before showing login — prevents flash if already signed in
+    setTimeout(() => {
+      if (!currentUserId) {
+        dismissLoader();
+        document.getElementById('login-screen').style.display = 'flex';
+      }
+    }, 600);
   }
 });
 
@@ -387,13 +392,16 @@ setTimeout(dismissLoader, 5000);
   .filter-btn[data-cat="shoulders"].active { color: var(--c4); border-color: rgba(196,123,255,0.3); background: rgba(196,123,255,0.07); }
   .filter-btn[data-cat="arms"].active { color: var(--c5); border-color: rgba(71,255,170,0.3); background: rgba(71,255,170,0.07); }
   .filter-btn[data-cat="core"].active { color: #FF9F47; border-color: rgba(255,159,71,0.3); background: rgba(255,159,71,0.07); }
-  .guide-grid { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-
-  /* EXERCISE CARDS */
-  .ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
-  .ex-card:hover { border-color: var(--border2); }
+  .guide-grid { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .guide-cat-group { display: flex; flex-direction: column; gap: 0; }
+  .guide-cat-header { display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 14px; border-radius: 10px 10px 0 0; border: 1px solid; border-bottom: none; }
+  .guide-cat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border); border-radius: 0 0 12px 12px; overflow: hidden; }
+  @media (max-width: 500px) { .guide-cat-cards { grid-template-columns: 1fr; } }
+  .ex-card { background: var(--surface); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); overflow: hidden; transition: background 0.15s; }
+  .ex-card:nth-child(even) { border-right: none; }
+  .ex-card:last-child, .ex-card:nth-last-child(2):nth-child(odd) { border-bottom: none; }
   .ex-card.hidden { display: none; }
-  .ex-card-header { display: flex; align-items: center; gap: 14px; padding: 16px; cursor: pointer; transition: background 0.12s; }
+  .ex-card-header { display: flex; align-items: center; gap: 12px; padding: 14px 14px; cursor: pointer; transition: background 0.12s; }
   .ex-card-header:hover { background: rgba(255,255,255,0.03); }
   .ex-cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .ex-card-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--text); }
@@ -726,7 +734,7 @@ setTimeout(dismissLoader, 5000);
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:radial-gradient(ellipse at 30% 20%, rgba(232,255,71,0.04) 0%, #0b0b0b 60%);flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:#0b0b0b;background:radial-gradient(ellipse at 30% 20%, rgba(232,255,71,0.04) 0%, #0b0b0b 60%);flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
   <svg viewBox="0 0 280 340" width="72" style="margin-bottom:28px;" xmlns="http://www.w3.org/2000/svg">
     <rect width="280" height="340" rx="48" fill="#111"/>
     <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
@@ -892,7 +900,6 @@ setTimeout(dismissLoader, 5000);
     <div class="streak-num" id="streak-num">0</div>
     <div class="streak-label">week streak</div>
   </div>
-  <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;height:28px;padding:0 8px;" id="streak-bars"></div>
   <div class="streak-detail" id="streak-detail">Log sessions to start your streak</div>
 </div>
 
@@ -2270,18 +2277,51 @@ function cardBodyHTML(ex) {
 // ── BUILD GUIDE GRID ──
 function buildGuide() {
   const grid = document.getElementById('guide-grid');
+
+  const catConfig = {
+    chest:     { label: 'Chest',     color: 'var(--c1)', rgb: '232,255,71'   },
+    back:      { label: 'Back',      color: 'var(--c2)', rgb: '71,200,255'   },
+    legs:      { label: 'Legs',      color: 'var(--c3)', rgb: '255,107,71'   },
+    shoulders: { label: 'Shoulders', color: 'var(--c4)', rgb: '196,123,255'  },
+    arms:      { label: 'Arms',      color: 'var(--c5)', rgb: '71,255,170'   },
+    core:      { label: 'Core',      color: '#FF9F47',   rgb: '255,159,71'   },
+  };
+
+  const groups = {};
   Object.entries(EXERCISES).forEach(([id, ex]) => {
-    grid.innerHTML += `
-      <div class="ex-card" data-cat="${ex.cat}" data-id="${id}">
+    if (!groups[ex.cat]) groups[ex.cat] = [];
+    groups[ex.cat].push({ id, ex });
+  });
+
+  const catOrder = ['chest','back','legs','shoulders','arms','core'];
+
+  grid.innerHTML = catOrder.map(cat => {
+    const items = groups[cat];
+    if (!items) return '';
+    const cfg = catConfig[cat] || { label: cat, color: 'var(--muted)', rgb: '255,255,255' };
+
+    const cards = items.map(({ id, ex }) => `
+      <div class="ex-card guide-cat-${cat}" data-cat="${ex.cat}" data-id="${id}" style="border-left:3px solid rgba(${cfg.rgb},0.4);">
         <div class="ex-card-header" onclick="toggleCard(this.parentElement)">
-          <span class="ex-cat-dot" style="background:${ex.dot};"></span>
-          <span class="ex-card-name">${ex.name}</span>
-          <span class="ex-card-muscle">${ex.muscle}</span>
+          <span class="ex-cat-dot" style="background:${ex.dot};width:12px;height:12px;box-shadow:0 0 6px ${ex.dot};"></span>
+          <div style="flex:1;min-width:0;">
+            <div class="ex-card-name">${ex.name}</div>
+            <div class="ex-card-muscle">${ex.muscle}</div>
+          </div>
           <span class="ex-card-chevron">▼</span>
         </div>
         <div class="ex-card-body">${cardBodyHTML(ex)}</div>
-      </div>`;
-  });
+      </div>`).join('');
+
+    return `<div class="guide-cat-group" data-cat="${cat}">
+      <div class="guide-cat-header" style="color:${cfg.color};border-color:rgba(${cfg.rgb},0.2);background:rgba(${cfg.rgb},0.05);">
+        <span style="width:4px;height:14px;border-radius:3px;background:${cfg.color};box-shadow:0 0 6px ${cfg.color};flex-shrink:0;display:inline-block;"></span>
+        ${cfg.label}
+        <span style="font-size:10px;color:rgba(${cfg.rgb},0.5);font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0.04em;margin-left:4px;">${items.length} exercises</span>
+      </div>
+      <div class="guide-cat-cards">${cards}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── PAGE SWITCH ──
@@ -2315,10 +2355,10 @@ function toggleCard(card) { card.classList.toggle('open'); }
 
 // ── FILTER ──
 function filterGuide(cat, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.guide-filters .filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('.ex-card').forEach(card => {
-    card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
+  document.querySelectorAll('.guide-cat-group').forEach(g => {
+    g.style.display = (cat === 'all' || g.dataset.cat === cat) ? '' : 'none';
   });
 }
 
@@ -3445,32 +3485,7 @@ function renderStreak() {
   const flame = document.querySelector('.streak-flame');
   if (flame) flame.style.fontSize = streak >= 4 ? '32px' : streak >= 1 ? '28px' : '24px';
 
-  // 7-day mini bar chart — last 7 days
-  const log = getWL();
-  const barsEl = document.getElementById('streak-bars');
-  if (barsEl) {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push(toLocalDateStr(d));
-    }
-    const dayLabels = ['M','T','W','T','F','S','S'];
-    const todayStr = toLocalDateStr(new Date());
-    barsEl.innerHTML = days.map((dateStr, i) => {
-      const hasSession = log.some(s => s.date === dateStr);
-      const isToday = dateStr === todayStr;
-      const isFuture = dateStr > todayStr;
-      const color = hasSession ? 'var(--c1)' : isFuture ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)';
-      const height = hasSession ? '100%' : '30%';
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;">
-        <div style="width:100%;height:20px;display:flex;align-items:flex-end;">
-          <div style="width:100%;height:${height};background:${color};border-radius:3px 3px 0 0;transition:height 0.3s;${isToday && !hasSession ? 'border:1px solid rgba(255,255,255,0.2);border-bottom:none;' : ''}"></div>
-        </div>
-        <div style="font-size:7px;color:${isToday ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'};letter-spacing:0.05em;">${dayLabels[i]}</div>
-      </div>`;
-    }).join('');
-  }
+  // 7-day mini bar chart removed
 }
 
 // ════════════════════════════════
