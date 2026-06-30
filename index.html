@@ -3629,14 +3629,16 @@ function toLocalDateStr(date) {
   return `${y}-${m}-${d}`;
 }
 
+let woWeeksToShow = 8;
+
 function renderWeeklyOverview() {
   const container = document.getElementById('wo-content');
   const log = getWL();
   const missed = getMissed();
 
-  // Build 8 weeks of data (current + 7 past)
+  // Build weeks of data (current + past)
   const weeks = [];
-  for (let w = 0; w < 8; w++) {
+  for (let w = 0; w < woWeeksToShow; w++) {
     const weekStart = getWeekStartDate(w);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
@@ -3730,7 +3732,14 @@ function renderWeeklyOverview() {
       </div>
       <div class="wo-days-grid" style="grid-template-columns:repeat(6,1fr);">${dayHTML}${extraHTML}</div>
     </div>`;
-  }).join('');
+  }).join('') + (woWeeksToShow < 52 ? `
+    <button onclick="showMoreWeeks()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:14px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;letter-spacing:0.04em;margin-top:4px;">Show more weeks</button>
+  ` : '');
+}
+
+function showMoreWeeks() {
+  woWeeksToShow += 12;
+  renderWeeklyOverview();
 }
 
 // ════════════════════════════════
